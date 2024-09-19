@@ -16,11 +16,11 @@ return new class extends Migration
             $table->string('title');
             $table->text('description');
             $table->date('task_deadline_date');
-            $table->foreignId('task_creator_user_id');
-            $table->foreignId('assigned_user_id');
-            $table->foreignId('assigned_tester_user_id');
-            $table->foreignId('task_type_id')->references('id')->on('task_types')->onDelete('cascade');
-            $table->foreignId('task_status_id')->references('id')->on('task_statuses')->onDelete('cascade');
+            $table->foreignId('task_creator_user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('assigned_user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('assigned_tester_user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('task_type_id')->constrained('task_types')->onDelete('cascade');
+            $table->foreignId('task_status_id')->constrained('task_statuses')->onDelete('cascade');
             $table->softDeletes();
             $table->timestamps();
         });
@@ -33,5 +33,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('tasks');
     }
-
 };

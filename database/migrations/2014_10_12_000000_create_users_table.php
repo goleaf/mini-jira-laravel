@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
-            $table->boolean('is_admin')->default(0);
-            $table->string('api_token')->nullable();
+            $table->boolean('is_admin')->default(false);
+            $table->string('api_token', 80)->unique()->nullable()->default(null);
             $table->rememberToken();
             $table->softDeletes();
             $table->timestamps();
