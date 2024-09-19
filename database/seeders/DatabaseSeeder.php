@@ -2,63 +2,91 @@
 
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\Task;
 use App\Models\TaskStatus;
 use App\Models\TaskType;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database.
      */
-    public function run()
+    public function run(): void
     {
-
-
-        TaskStatus::insert([
-                             ['name' => 'In process'],
-                             ['name' => 'In testing'],
-                             ['name' => 'In production'],
-                             ['name' => 'Pause'],
-                         ]);
-
-        TaskType::insert([
-                             ['name' => 'Task'],
-                             ['name' => 'Bug'],
-                         ]);
-
-
-        Task::factory(100)->create([
-                                      'task_creator_user_id' => User::factory(),
-                                      'assigned_user_id' => User::factory(),
-                                      'assigned_tester_user_id' => User::factory(),
-                                      'task_type_id' => rand(1,2),
-                                      'task_status_id' => rand(1,4),
-                                  ]);
-
-        User::create([
-                         'name' => 'Site Administrator',
-                         'email' => 'admin@tasksportal.com',
-                         'password' => bcrypt('password'),
-                         'is_admin' => 1
-                     ]);
-
-        User::create([
-                         'name' => 'Demo User',
-                         'email' => 'user@tasksportal.com',
-                         'password' => bcrypt('password')
-                     ]);
-
-
-/*
-        TaskStatus::create(
-            ['title' => 'Task' ],
-            ['title' => 'Bug' ],
-        );
-*/
+        $this->call([
+            TaskStatusSeeder::class,
+            TaskTypeSeeder::class,
+            TaskSeeder::class,
+            UserSeeder::class,
+        ]);
     }
+}
 
+class TaskStatusSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $statuses = ['In process', 'In testing', 'In production', 'Pause'];
+        foreach ($statuses as $status) {
+            TaskStatus::create(['name' => $status]);
+        }
+    }
+}
+
+class TaskTypeSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $types = ['Task', 'Bug'];
+        foreach ($types as $type) {
+            TaskType::create(['name' => $type]);
+        }
+    }
+}
+
+class TaskSeeder extends Seeder
+{
+    public function run(): void
+    {
+        Task::factory(100)->create([
+            'task_creator_user_id' => fn() => User::factory()->create()->id,
+            'assigned_user_id' => fn() => User::factory()->create()->id,
+            'assigned_tester_user_id' => fn() => User::factory()->create()->id,
+            'task_type_id' => fn() => TaskType::inRandomOrder()->first()->id,
+            'task_status_id' => fn() => TaskStatus::inRandomOrder()->first()->id,
+        ]);
+    }
+}
+
+class UserSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $users = [
+            [
+                'name' => 'Site Administrator',
+                'email' => 'admin@tasksportal.com',
+                'password' => 'password',
+                'is_admin' => true
+            ],
+            [
+                'name' => 'Demo User',
+                'email' => 'user@tasksportal.com',
+                'password' => 'password',
+                'is_admin' => false
+            ]
+        ];
+
+        foreach ($users as $user) {
+            User::create([
+                'name' => $user['name'],
+                'email' => $user['email'],
+                'password' => Hash::make($user['password']),
+                'is_admin' => $user['is_admin']
+            ]);
+        }
+    }
 }
