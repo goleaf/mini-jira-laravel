@@ -28,8 +28,8 @@ class CommentController extends Controller
 
         Comment::create($attributes);
 
-        LogService::logAction('created', $task->id, 'comment');
+        LogService::logAction(__('action_created'), $task->id, 'comment');
 
-        return back()->with('success', __('comments.comment_added'));
+        return back()->with('success', __('comment_added_success'));
     }
 }

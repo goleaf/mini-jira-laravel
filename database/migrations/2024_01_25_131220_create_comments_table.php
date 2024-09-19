@@ -13,11 +13,10 @@ return new class extends Migration
     {
         Schema::create('comments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('task_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('task_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->text('body');
-            $table->unsignedBigInteger('parent_id')->nullable();
-            $table->foreign('parent_id')->nullable()->references('id')->on('comments')->onDelete('cascade');
+            $table->foreignId('parent_id')->nullable()->constrained('comments')->cascadeOnDelete();
             $table->softDeletes();
             $table->timestamps();
         });
@@ -31,5 +30,3 @@ return new class extends Migration
         Schema::dropIfExists('comments');
     }
 };
-
-
