@@ -97,7 +97,7 @@ class TaskController extends Controller
 
         LogService::logAction('created', $task->id, 'task');
 
-        return redirect()->route('tasks.index')->with('success', __('task_controller.task_created'));
+        return redirect()->route('tasks.index')->with('success', __('task_created_success'));
     }
 
     public function show(Task $task)
@@ -125,7 +125,7 @@ class TaskController extends Controller
 
         LogService::logAction('updated', $task->id, 'task');
 
-        return redirect()->route('tasks.index')->with('success', __('task_controller.task_updated'));
+        return redirect()->route('tasks.index')->with('success', __('task_updated_success'));
     }
 
     public function destroy(Task $task)
@@ -134,7 +134,7 @@ class TaskController extends Controller
 
         LogService::logAction('deleted', $task->id, 'task');
 
-        return redirect()->route('tasks.index')->with('success', __('task_controller.task_deleted'));
+        return redirect()->route('tasks.index')->with('success', __('task_deleted_success'));
     }
 
     public function validateTask(Request $request)
@@ -155,19 +155,19 @@ class TaskController extends Controller
         ];
 
         $messages = [
-            'title.required' => __('tasks.title.required'),
-            'task_deadline_date.required' => __('tasks.deadline_date.required'),
-            'description.required' => __('tasks.details.required'),
-            'task_creator_user_id.required' => __('tasks.task_creator_user_id.required'),
-            'task_creator_user_id.exists' => __('tasks.task_creator_user_id.exists'),
-            'assigned_user_id.required' => __('tasks.assigned_to.required'),
-            'assigned_user_id.exists' => __('tasks.assigned_to.exists'),
-            'assigned_tester_user_id.required' => __('tasks.assigned_tester.required'),
-            'assigned_tester_user_id.exists' => __('tasks.assigned_tester.exists'),
-            'task_type_id.required' => __('tasks.task_type.required'),
-            'task_type_id.exists' => __('tasks.task_type.exists'),
-            'task_status_id.required' => __('tasks.task_status.required'),
-            'task_status_id.exists' => __('tasks.task_status.exists'),
+            'title.required' => __('validation.required', ['attribute' => __('task_title')]),
+            'task_deadline_date.required' => __('validation.required', ['attribute' => __('date_created')]),
+            'description.required' => __('validation.required', ['attribute' => __('task_details')]),
+            'task_creator_user_id.required' => __('validation.required', ['attribute' => __('task_created_by')]),
+            'task_creator_user_id.exists' => __('validation.exists', ['attribute' => __('task_created_by')]),
+            'assigned_user_id.required' => __('validation.required', ['attribute' => __('task_assigned_to')]),
+            'assigned_user_id.exists' => __('validation.exists', ['attribute' => __('task_assigned_to')]),
+            'assigned_tester_user_id.required' => __('validation.required', ['attribute' => __('task_assigned_to_tester')]),
+            'assigned_tester_user_id.exists' => __('validation.exists', ['attribute' => __('task_assigned_to_tester')]),
+            'task_type_id.required' => __('validation.required', ['attribute' => __('task_type')]),
+            'task_type_id.exists' => __('validation.exists', ['attribute' => __('task_type')]),
+            'task_status_id.required' => __('validation.required', ['attribute' => __('status')]),
+            'task_status_id.exists' => __('validation.exists', ['attribute' => __('status')]),
         ];
 
         $inputData = array_merge($request->all(), ['task_creator_user_id' => $taskCreatorUserId]);
@@ -184,7 +184,7 @@ class TaskController extends Controller
 
         session(['paginationCount' => $request->paginationCount]);
 
-        return back()->with('success', __('general.success'));
+        return back()->with('success', __('update'));
     }
 
     public function calculateDateDifference(Task $task)
@@ -197,9 +197,9 @@ class TaskController extends Controller
         $differenceInDays = floor($difference / (60 * 60 * 24));
 
         if ($differenceInDays > 0) {
-            return __("tasks.task_has_days", ['days' => $differenceInDays]);
+            return __("task_progress", ['days' => $differenceInDays]);
         } else {
-            return __("tasks.task_expired");
+            return __("task_expired");
         }
     }
 

@@ -10,14 +10,24 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class TaskFactory extends Factory
 {
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
     protected $model = Task::class;
 
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
     public function definition(): array
     {
         return [
-            'title' => $this->faker->sentence(),
-            'description' => $this->faker->paragraph(5),
-            'task_deadline_date' => $this->faker->dateTimeBetween('now','1 year'),
+            'title' => fake()->sentence(),
+            'description' => fake()->paragraph(5),
+            'task_deadline_date' => fake()->dateTimeBetween('now', '1 year'),
         ];
     }
 }
