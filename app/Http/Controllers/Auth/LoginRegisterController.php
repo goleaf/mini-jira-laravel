@@ -69,22 +69,18 @@ class LoginRegisterController extends Controller
             return redirect()->route('tasks.index');
         }
 
-        return $this->redirectToLogin('Your provided credentials do not match in our records.');
+        return back()
+            ->withErrors(['email' => 'Your provided credentials do not match in our records.'])
+            ->onlyInput('email');
     }
 
     public function logout(Request $request)
     {
         Auth::logout();
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login')->with('success', 'You have logged out successfully!');
-    }
-
-    private function redirectToLogin($error = 'Please login to access the dashboard.')
-    {
-        return redirect()->route('login')
-            ->withErrors(['email' => $error])
-            ->onlyInput('email');
+        return redirect()->route('login')->withSuccess('You have logged out successfully!');
     }
 }
