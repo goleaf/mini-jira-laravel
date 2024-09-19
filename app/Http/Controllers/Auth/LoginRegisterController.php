@@ -18,7 +18,7 @@ class LoginRegisterController extends Controller
     public function dashboard()
     {
         return Auth::check() ? view('task.index') : redirect()->route('login')
-            ->withErrors(['email' => __('login.dashboard_login_required')])
+            ->withErrors(['email' => __('login_required_for_dashboard')])
             ->onlyInput('email');
     }
 
@@ -61,10 +61,10 @@ class LoginRegisterController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect()->route('tasks.index');
+            return redirect()->route('tasks.index')->with('success', __('login_successful'));
         }
 
-        return back()->withErrors(['email' => __('login.credentials_mismatch')])
+        return back()->withErrors(['email' => __('auth.failed')])
             ->onlyInput('email');
     }
 
@@ -74,6 +74,6 @@ class LoginRegisterController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login')->withSuccess(__('login.logout_success'));
+        return redirect()->route('login')->with('success', __('logout_successful'));
     }
 }
