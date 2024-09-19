@@ -8,23 +8,52 @@
                             <strong>{{ $comment->user->name }}</strong> <small>{{ $comment->created_at->diffForHumans() }}</small>
                         </div>
                         <div class="comment-body">{{ $comment->body }}</div>
-                        <form method="post" action="{{ route('comments.store', ['task' => $task->id]) }}">
+                        <form method="post" action="{{ route('comments.store', ['task' => $task->id]) }}" id="comment-form-{{ $comment->id }}">
                             @csrf
                             <div class="form-group d-flex align-items-center">
-                                <input type="text" name="body" class="form-control flex-grow-1 me-2" />
+                                <input type="text" name="body" class="form-control flex-grow-1 me-2" required minlength="2" maxlength="1000" />
                                 <input type="hidden" name="task_id" value="{{ $task->id }}" />
                                 <input type="hidden" name="parent_id" value="{{ $comment->id }}" />
-
-                                <input type="submit" class="btn btn-warning" value="Reply" />
+                                <button type="submit" class="btn btn-warning">{{ __('comments.reply') }}</button>
                             </div>
                         </form>
                         @include('task.comments', ['comments' => $comment->replies])
-
                     </div>
                 @endforeach
             </div>
         @else
-            <p>No comments yet.</p>
+            <p>{{ __('comments.no_comments') }}</p>
         @endif
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.querySelectorAll('form[id^="comment-form-"]').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        fetch(this.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('{{ __('comments.error_submitting') }}');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('{{ __('comments.error_submitting') }}');
+        });
+    });
+});
+</script>
+@endpush

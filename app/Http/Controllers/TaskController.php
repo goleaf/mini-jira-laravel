@@ -10,10 +10,10 @@ use App\Services\LogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Log;
 
 class TaskController extends Controller
 {
@@ -31,47 +31,54 @@ class TaskController extends Controller
             }
         });
     }
+    
     public function index(Request $request)
     {
         $tasks = Task::query();
 
-        if ($request->filled('search')) {
-            $search = $request->input('search');
-            $tasks->where(function ($query) use ($search) {
-                $query->where('title', 'like', "%$search%")
-                    ->orWhere('description', 'like', "%$search%");
-            });
-        }
-
-        $filters = [
-            'created_at',
-            'task_deadline_date',
-            'task_creator_user_id',
-            'assigned_user_id',
-            'task_type_id',
-            'task_status_id',
-            'assigned_tester_user_id'
-        ];
-
-        foreach ($filters as $filter) {
-            if ($request->filled($filter)) {
-                $tasks->where($filter, $request->input($filter));
+        try {
+            if ($request->filled('search')) {
+                $search = $request->input('search');
+                $tasks->where(function ($query) use ($search) {
+                    $query->where('title', 'like', "%$search%")
+                        ->orWhere('description', 'like', "%$search%");
+                });
             }
+
+            $filters = [
+                'created_at',
+                'task_deadline_date',
+                'task_creator_user_id',
+                'assigned_user_id',
+                'task_type_id',
+                'task_status_id',
+                'assigned_tester_user_id'
+            ];
+
+            foreach ($filters as $filter) {
+                if ($request->filled($filter)) {
+                    $tasks->where($filter, $request->input($filter));
+                }
+            }
+
+            $taskTypes = TaskType::orderBy('name')->get();
+            $taskStatuses = TaskStatus::orderBy('name')->get();
+            $taskCreators = User::orderBy('name')->get();
+            $assignedTesters = User::orderBy('name')->get();
+            $assignedUsers = User::orderBy('name')->get();
+
+            $paginationCount = Session::get('paginationCount', 10);
+
+            $tasks = $tasks->withCount('comments')->latest()->paginate($paginationCount);
+
+            return view('task.index', compact('tasks', 'taskCreators', 'assignedUsers', 'assignedTesters', 'taskTypes', 'taskStatuses'));
+        } catch (\Exception $e) {
+            Log::error('Error in TaskController@index: ' . $e->getMessage());
+            throw $e;
+        } finally {
+            // Any cleanup code can go here if needed
         }
-
-        $taskTypes = TaskType::orderBy('name')->get();
-        $taskStatuses = TaskStatus::orderBy('name')->get();
-        $taskCreators = User::orderBy('name')->get();
-        $assignedTesters = User::orderBy('name')->get();
-        $assignedUsers = User::orderBy('name')->get();
-
-        $paginationCount = Session::get('paginationCount', 10);
-
-        $tasks = $tasks->withCount('comments')->latest()->paginate($paginationCount);
-
-        return view('task.index', compact('tasks', 'taskCreators', 'assignedUsers', 'assignedTesters', 'taskTypes', 'taskStatuses'));
     }
-
 
     public function create()
     {
@@ -82,7 +89,6 @@ class TaskController extends Controller
         return view('task.create', compact('users', 'taskTypes', 'taskStatuses'));
     }
 
-
     public function store(Request $request)
     {
         $validatedData = $this->validateTask($request);
@@ -91,29 +97,25 @@ class TaskController extends Controller
 
         LogService::logAction('created', $task->id, 'task');
 
-        return redirect()->route('tasks.index')->with('success', 'A new task has been created');
+        return redirect()->route('tasks.index')->with('success', __('task_controller.task_created'));
     }
-
 
     public function show(Task $task)
     {
-
         $differenceInDays = $this->calculateDateDifference($task);
 
         return view('task.show', compact('task', 'differenceInDays'));
     }
 
-
     public function edit($id)
     {
         $task = Task::findOrFail($id);
-        $users = User::orderBy('name')->get();;
+        $users = User::orderBy('name')->get();
         $taskStatuses = TaskStatus::orderBy('name')->get();
         $taskTypes = TaskType::orderBy('name')->get();
 
         return view('task.edit', compact('task', 'users', 'taskTypes', 'taskStatuses'));
     }
-
 
     public function update(Request $request)
     {
@@ -121,11 +123,10 @@ class TaskController extends Controller
         $task = Task::find($request->task);
         $task->update($attributes);
 
-        LogService::logAction('updated', $task->id, 'task' );
+        LogService::logAction('updated', $task->id, 'task');
 
-        return redirect()->route('tasks.index')->with('success', 'Task updated successfully');
+        return redirect()->route('tasks.index')->with('success', __('task_controller.task_updated'));
     }
-
 
     public function destroy(Task $task)
     {
@@ -133,9 +134,8 @@ class TaskController extends Controller
 
         LogService::logAction('deleted', $task->id, 'task');
 
-        return redirect()->route('tasks.index')->with('success', 'Task deleted successfully');
+        return redirect()->route('tasks.index')->with('success', __('task_controller.task_deleted'));
     }
-
 
     public function validateTask(Request $request)
     {
@@ -155,19 +155,19 @@ class TaskController extends Controller
         ];
 
         $messages = [
-            'title.required' => 'The title field is required.',
-            'task_deadline_date.required' => 'The task deadline field is required.',
-            'description.required' => 'The description field is required.',
-            'task_creator_user_id.required' => 'The task creator user ID field is required.',
-            'task_creator_user_id.exists' => 'The selected task creator user ID is invalid.',
-            'assigned_user_id.required' => 'The assigned user ID field is required.',
-            'assigned_user_id.exists' => 'The selected assigned user ID is invalid.',
-            'assigned_tester_user_id.required' => 'The assigned tester user ID field is required.',
-            'assigned_tester_user_id.exists' => 'The selected assigned tester user ID is invalid.',
-            'task_type_id.required' => 'The task type ID field is required.',
-            'task_type_id.exists' => 'The selected task type ID is invalid.',
-            'task_status_id.required' => 'The task status ID field is required.',
-            'task_status_id.exists' => 'The selected task status ID is invalid.',
+            'title.required' => __('tasks.title.required'),
+            'task_deadline_date.required' => __('tasks.deadline_date.required'),
+            'description.required' => __('tasks.details.required'),
+            'task_creator_user_id.required' => __('tasks.task_creator_user_id.required'),
+            'task_creator_user_id.exists' => __('tasks.task_creator_user_id.exists'),
+            'assigned_user_id.required' => __('tasks.assigned_to.required'),
+            'assigned_user_id.exists' => __('tasks.assigned_to.exists'),
+            'assigned_tester_user_id.required' => __('tasks.assigned_tester.required'),
+            'assigned_tester_user_id.exists' => __('tasks.assigned_tester.exists'),
+            'task_type_id.required' => __('tasks.task_type.required'),
+            'task_type_id.exists' => __('tasks.task_type.exists'),
+            'task_status_id.required' => __('tasks.task_status.required'),
+            'task_status_id.exists' => __('tasks.task_status.exists'),
         ];
 
         $inputData = array_merge($request->all(), ['task_creator_user_id' => $taskCreatorUserId]);
@@ -177,7 +177,6 @@ class TaskController extends Controller
         return $validatedData;
     }
 
-
     public function updatePaginationCount(Request $request)
     {
         $allowedValues = implode(',', range(5, 50, 5));
@@ -185,7 +184,7 @@ class TaskController extends Controller
 
         session(['paginationCount' => $request->paginationCount]);
 
-        return back()->with('success', 'Pagination count updated successfully');
+        return back()->with('success', __('general.success'));
     }
 
     public function calculateDateDifference(Task $task)
@@ -198,9 +197,9 @@ class TaskController extends Controller
         $differenceInDays = floor($difference / (60 * 60 * 24));
 
         if ($differenceInDays > 0) {
-            return "Task has $differenceInDays days";
+            return __("tasks.task_has_days", ['days' => $differenceInDays]);
         } else {
-            return "Task has expired";
+            return __("tasks.task_expired");
         }
     }
 

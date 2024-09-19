@@ -3,25 +3,25 @@
 @section('content')
 
     <div class="container bg-white border p-3">
-        <h2 class="mt-5 mb-4">Tasks: {{ ucwords($user->name) }}</h2>
+        <h2 class="mt-5 mb-4">{{ __('messages.tasks') }}: {{ ucwords($user->name) }}</h2>
 
         <div class="row mb-4">
             <div class="col-md-3">
-                <p>Task created by {{ ucwords($user->name) }}: {{ $user->noOfTaskCreated() }}</p>
+                <p>{{ __('messages.task_created_by') }} {{ ucwords($user->name) }}: {{ $user->noOfTaskCreated() }}</p>
             </div>
             <div class="col-md-3">
-                <p>Task Assigned to {{ ucwords($user->name) }}: {{ $user->noOfTaskAssigned() }}</p>
+                <p>{{ __('messages.task_assigned_to') }} {{ ucwords($user->name) }}: {{ $user->noOfTaskAssigned() }}</p>
             </div>
         </div>
 
         <table class="table">
             <thead>
             <tr>
-                <th scope="col">Date Created</th>
-                <th scope="col">Deadline Date</th>
-                <th scope="col">Task Name</th>
-                <th scope="col">Created By</th>
-                <th scope="col">Assigned to</th>
+                <th scope="col">{{ __('messages.date_created') }}</th>
+                <th scope="col">{{ __('messages.deadline_date') }}</th>
+                <th scope="col">{{ __('messages.task_name') }}</th>
+                <th scope="col">{{ __('messages.created_by') }}</th>
+                <th scope="col">{{ __('messages.assigned_to') }}</th>
             </tr>
             </thead>
             <tbody>
@@ -39,7 +39,7 @@
                 @endforeach
             @else
                 <tr>
-                    <td colspan="6">No tasks found</td>
+                    <td colspan="6">{{ __('messages.no_tasks_found') }}</td>
                 </tr>
             @endif
             </tbody>

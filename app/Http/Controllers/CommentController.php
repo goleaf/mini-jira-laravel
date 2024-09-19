@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 
 class CommentController extends Controller
 {
-
     public function show(Task $task)
     {
         $task->load('comments.user');
@@ -17,23 +16,20 @@ class CommentController extends Controller
         return view('task.show', compact('task'));
     }
 
-
     public function store(Request $request, Task $task)
     {
         $attributes = $request->validate([
-                                 'body' => 'required'
-                             ]);
+            'body' => 'required'
+        ]);
 
         $attributes['task_id'] = $task->id;
-        $attributes['parent_id'] = $request->parent_id;
+        $attributes['parent_id'] = $request->parent_id ?? null;
         $attributes['user_id'] = auth()->id();
 
         Comment::create($attributes);
 
         LogService::logAction('created', $task->id, 'comment');
 
-        return back()->with('success', 'Comment was added successfully');
+        return back()->with('success', __('comments.comment_added'));
     }
-
-
 }

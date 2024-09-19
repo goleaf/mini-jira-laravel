@@ -11,6 +11,6 @@ class LogsController extends Controller
     {
         $logs = Log::latest()->paginate(20);
 
-        return view('log.index', compact('logs'));
+        return view('log.index', ['logs' => $logs]);
     }
 }

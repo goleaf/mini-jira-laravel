@@ -7,13 +7,9 @@ use Illuminate\Support\Facades\Auth;
 
 class LogService
 {
-    public static function logAction($action, $object_id, $type)
+    public static function logAction(string $action, int $object_id, string $type): void
     {
-        Log::create([
-            'action' => $action,
-            'object_id' => $object_id,
-            'type' => $type,
-            'user_id' => Auth::id(),
-        ]);
+        $userId = Auth::id();
+        Log::create(compact('action', 'object_id', 'type', 'userId'));
     }
 }

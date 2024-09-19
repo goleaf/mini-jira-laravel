@@ -32,32 +32,33 @@ class Task extends Model
         return $this->belongsTo(User::class, 'assigned_user_id');
     }
 
-    public function getTaskTypeId()
+    public function taskType()
     {
         return $this->belongsTo(TaskType::class, 'task_type_id');
     }
 
-    public function getTaskStatusId()
+    public function taskStatus()
     {
         return $this->belongsTo(TaskStatus::class, 'task_status_id');
     }
 
-    public function getTaskCreatorUser()
+    public function getTaskCreatorUserAttribute()
     {
-        $taskcreator =  User::findOrFail($this->task_creator_user_id);
-        return ucwords($taskcreator->name);
+        return $this->getUserName($this->task_creator_user_id);
     }
 
-    public function getAssignedUser()
+    public function getAssignedUserAttribute()
     {
-        $assignedUser = User::findOrFail($this->assigned_user_id);
-        return ucwords($assignedUser->name);
+        return $this->getUserName($this->assigned_user_id);
     }
 
-    public function getAssignedTester()
+    public function getAssignedTesterAttribute()
     {
-        $assignedTester = User::findOrFail($this->assigned_tester_user_id);
-        return ucwords($assignedTester->name);
+        return $this->getUserName($this->assigned_tester_user_id);
     }
 
+    private function getUserName($userId)
+    {
+        return ucwords(User::find($userId)->name ?? 'Unknown');
+    }
 }

@@ -27,17 +27,16 @@ class TaskStatusController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-                               'name' => 'required|string|max:255',
-                           ]);
+            'name' => 'required|string|max:255',
+        ]);
 
         $task_status = TaskStatus::create([
-                               'name' => $request->name,
-                           ]);
+            'name' => $request->name,
+        ]);
 
         LogService::logAction('created', $task_status->id, 'task_status');
 
-
-        return redirect()->route('task-statuses.index')->with('success', 'Task status created successfully.');
+        return redirect()->route('task-statuses.index')->with('success', __('task_status_controller.status_created'));
     }
 
     public function show(TaskStatus $taskStatus)
@@ -53,16 +52,16 @@ class TaskStatusController extends Controller
     public function update(Request $request, TaskStatus $taskStatus)
     {
         $request->validate([
-                               'name' => 'required|string|max:255',
-                           ]);
+            'name' => 'required|string|max:255',
+        ]);
 
         $taskStatus->update([
-                                'name' => $request->name,
-                            ]);
+            'name' => $request->name,
+        ]);
 
         LogService::logAction('updated', $taskStatus->id, 'task_status');
 
-        return redirect()->route('task-statuses.index')->with('success', 'Task status updated successfully.');
+        return redirect()->route('task-statuses.index')->with('success', __('task_status_controller.status_updated'));
     }
 
     public function destroy(TaskStatus $taskStatus)
@@ -71,6 +70,6 @@ class TaskStatusController extends Controller
 
         LogService::logAction('deleted', $taskStatus->id, 'task_status');
 
-        return redirect()->route('task-statuses.index')->with('success', 'Task status deleted successfully.');
+        return redirect()->route('task-statuses.index')->with('success', __('task_status_controller.status_deleted'));
     }
 }

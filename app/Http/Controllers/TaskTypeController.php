@@ -22,11 +22,11 @@ class TaskTypeController extends Controller
     public function store(Request $request)
     {
         $taskType = TaskType::create($request->validate([
-                                                'name' => 'required|string|max:255',
-                                            ]));
-        LogService::logAction('updated', $taskType->id, 'task_type');
+            'name' => 'required|string|max:255',
+        ]));
+        LogService::logAction('created', $taskType->id, 'task_type');
 
-        return redirect()->route('task-types.index')->with('success', 'Task type created successfully!');
+        return redirect()->route('task-types.index')->with('success', __('task_type_controller.type_created'));
     }
 
     public function edit(TaskType $taskType)
@@ -37,20 +37,19 @@ class TaskTypeController extends Controller
     public function update(Request $request, TaskType $taskType)
     {
         $taskType->update($request->validate([
-                                                 'name' => 'required|string|max:255',
-                                             ]));
+            'name' => 'required|string|max:255',
+        ]));
         LogService::logAction('updated', $taskType->id, 'task_type');
 
-        return redirect()->route('task-types.index')->with('success', 'Task type updated successfully!');
+        return redirect()->route('task-types.index')->with('success', __('task_type_controller.type_updated'));
     }
 
     public function destroy(TaskType $taskType)
     {
-
         $taskType->delete();
 
-        LogService::logAction('updated', $taskType->id, 'task_type');
+        LogService::logAction('deleted', $taskType->id, 'task_type');
 
-        return redirect()->route('task-types.index')->with('success', 'Task type deleted successfully!');
+        return redirect()->route('task-types.index')->with('success', __('task_type_controller.type_deleted'));
     }
 }
