@@ -56,6 +56,14 @@ class TaskController extends Controller
             }
         }
 
+        if ($request->filled('created_at_from') && $request->filled('created_at_to')) {
+            $query->whereBetween('created_at', [$request->created_at_from, $request->created_at_to]);
+        }
+
+        if ($request->filled('task_deadline_date_from') && $request->filled('task_deadline_date_to')) {
+            $query->whereBetween('task_deadline_date', [$request->task_deadline_date_from, $request->task_deadline_date_to]);
+        }
+
         return $query;
     }
 

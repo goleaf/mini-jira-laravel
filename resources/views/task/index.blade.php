@@ -57,7 +57,7 @@
                 @endforeach
             @else
                 <tr>
-                    <td colspan="9">{{ __('no_tasks_found') }}</td>
+                    <td colspan="9" class="text-center"><i class="fas fa-exclamation-circle me-2"></i>{{ __('no_tasks_found') }}</td>
                 </tr>
             @endif
             </tbody>

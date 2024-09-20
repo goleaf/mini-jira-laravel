@@ -100,5 +100,10 @@
     "confirm_new_password": "Confirm new password",
     "update_profile": "Update profile",
     "password_change_note": "Leave blank if you don't want to change the password.",
-    "error_heading": "Error"
+    "error_heading": "Error",
+    "apply": "Apply",
+    "from": "From",
+    "to": "To",
+    "creation_date": "Creation date",
+    "deadline_date": "Deadline date"
 }

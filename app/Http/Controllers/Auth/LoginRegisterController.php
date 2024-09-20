@@ -17,9 +17,11 @@ class LoginRegisterController extends Controller
 
     public function dashboard()
     {
-        return Auth::check() ? view('task.index') : redirect()->route('login')
-            ->withErrors(['email' => __('login_required_for_dashboard')])
-            ->onlyInput('email');
+        if (!Auth::check()) {
+            return redirect()->route('login')
+                ->withErrors(['email' => __('login_required_for_dashboard')]);
+        }
+        return view('task.index');
     }
 
     public function login()
@@ -64,8 +66,9 @@ class LoginRegisterController extends Controller
             return redirect()->route('tasks.index')->with('success', __('login_successful'));
         }
 
-        return back()->withErrors(['email' => __('auth.failed')])
-            ->onlyInput('email');
+        return back()->withErrors([
+            'email' => __('auth.failed'),
+        ]);
     }
 
     public function logout(Request $request)

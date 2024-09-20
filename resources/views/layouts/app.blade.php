@@ -12,10 +12,16 @@
 <body>
 <div id="app">
     <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
-        <div class="container">
-            <a class="navbar-brand" href="{{ url('/') }}">
-                <i class="fas fa-tasks"></i> {{ __('app_title') }}
-            </a>
+        <div class="container{{ Auth::check() ? '-fluid' : '' }}">
+            @auth
+                <a class="navbar-brand text-primary" href="{{ url('/') }}">
+                    <i class="fas fa-tasks"></i> {{ __('app_title') }}
+                </a>
+            @else
+                <a class="navbar-brand text-primary mx-auto" href="{{ url('/') }}">
+                    <i class="fas fa-tasks"></i> {{ __('app_title') }}
+                </a>
+            @endauth
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -24,10 +30,10 @@
                 <ul class="navbar-nav me-auto">
                     @auth
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('tasks.create') }}"><i class="fas fa-plus"></i> {{ __('task_create') }}</a>
+                            <a class="nav-link text-primary" href="{{ route('tasks.create') }}"><i class="fas fa-plus"></i> {{ __('task_create') }}</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('user.dashboard', ['user' => auth()->id()]) }}">
+                            <a class="nav-link text-primary" href="{{ route('user.dashboard', ['user' => auth()->id()]) }}">
                                 <i class="fas fa-tachometer-alt"></i> {{ __('user_dashboard', ['name' => ucwords(auth()->user()->name)]) }}
                             </a>
                         </li>
@@ -38,37 +44,26 @@
                     @auth
                         @if(Auth::user()->is_admin)
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ route('logs.index') }}"><i class="fas fa-clipboard-list"></i> {{ __('logs') }}</a>
+                                <a class="nav-link text-primary" href="{{ route('logs.index') }}"><i class="fas fa-clipboard-list"></i> {{ __('logs') }}</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ route('task-types.index') }}"><i class="fas fa-list-ul"></i> {{ __('task_types') }}</a>
+                                <a class="nav-link text-primary" href="{{ route('task-types.index') }}"><i class="fas fa-list-ul"></i> {{ __('task_types') }}</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ route('task-statuses.index') }}"><i class="fas fa-chart-bar"></i> {{ __('task_statuses') }}</a>
+                                <a class="nav-link text-primary" href="{{ route('task-statuses.index') }}"><i class="fas fa-chart-bar"></i> {{ __('task_statuses') }}</a>
                             </li>
                         @endif
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('profile.edit') }}">
+                            <a class="nav-link text-primary" href="{{ route('profile.edit') }}">
                                 <i class="fas fa-user-edit"></i> {{ Auth::user()->name }}
                             </a>
                         </li>
                         <li class="nav-item">
                             <form action="{{ route('logout') }}" method="POST" class="d-inline">
                                 @csrf
-                                <button type="submit" class="btn btn-link nav-link"><i class="fas fa-sign-out-alt"></i> {{ __('logout') }}</button>
+                                <button type="submit" class="btn btn-link nav-link text-primary"><i class="fas fa-sign-out-alt"></i> {{ __('logout') }}</button>
                             </form>
                         </li>
-                    @else
-                        @if (Route::has('login'))
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('login') }}"><i class="fas fa-sign-in-alt"></i> {{ __('login') }}</a>
-                            </li>
-                        @endif
-                        @if (Route::has('register'))
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('register') }}"><i class="fas fa-user-plus"></i> {{ __('register') }}</a>
-                            </li>
-                        @endif
                     @endauth
                 </ul>
             </div>
