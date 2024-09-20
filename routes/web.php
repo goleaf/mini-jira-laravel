@@ -8,7 +8,7 @@
     use App\Http\Controllers\TaskTypeController;
     use App\Http\Controllers\UserController;
     use Illuminate\Support\Facades\Route;
-
+    use App\Http\Controllers\ProfileController;
 
 Route::get('/', [TaskController::class, 'index'])->name('home');
 
@@ -56,11 +56,16 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/task-statuses/{taskStatus}', [TaskStatusController::class, 'update'])->name('task-statuses.update');
     Route::delete('/task-statuses/{taskStatus}', [TaskStatusController::class, 'destroy'])->name('task-statuses.destroy');
 
+    // profile
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
     // logs
     Route::get('/logs', [LogsController::class, 'index'])->name('logs.index');
 
     Route::resources(['task' => TaskController::class ]);
 
+     
 });
 
 

@@ -91,5 +91,14 @@
     "task_type_required": "Task type is required.",
     "task_status_required": "Task status is required.",
     "cannot_delete_status_with_tasks": "Cannot delete status with associated task(s)",
-    "cannot_delete_task_type_with_tasks": "Cannot delete task type with associated task(s)"
+    "cannot_delete_task_type_with_tasks": "Cannot delete task type with associated task(s)",
+    "edit_profile": "Edit profile",
+    "profile_updated_successfully": "Profile updated successfully",
+    "profile": "Profile",
+    "new_password": "New password",
+    "current_password": "Current password",
+    "confirm_new_password": "Confirm new password",
+    "update_profile": "Update profile",
+    "password_change_note": "Leave blank if you don't want to change the password.",
+    "error_heading": "Error"
 }

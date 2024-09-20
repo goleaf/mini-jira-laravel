@@ -47,18 +47,16 @@
                                 <a class="nav-link" href="{{ route('task-statuses.index') }}"><i class="fas fa-chart-bar"></i> {{ __('task_statuses') }}</a>
                             </li>
                         @endif
-                        <li class="nav-item dropdown">
-                            <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
-                                <i class="fas fa-user"></i> {{ Auth::user()->name }}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('profile.edit') }}">
+                                <i class="fas fa-user-edit"></i> {{ Auth::user()->name }}
                             </a>
-                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault();document.getElementById('logout-form').submit();">
-                                    <i class="fas fa-sign-out-alt"></i> {{ __('logout') }}
-                                </a>
-                                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                                    @csrf
-                                </form>
-                            </div>
+                        </li>
+                        <li class="nav-item">
+                            <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                                @csrf
+                                <button type="submit" class="btn btn-link nav-link"><i class="fas fa-sign-out-alt"></i> {{ __('logout') }}</button>
+                            </form>
                         </li>
                     @else
                         @if (Route::has('login'))
