@@ -8,7 +8,7 @@ Mini Jira Laravel is a sophisticated and feature-rich task management applicatio
 
 ## Detailed Feature Set
 
-### 1. Task and Project Management (Partially Implemented)
+### 1. Task and Project Management (Implemented):
 - **CRUD Functionality**: `(Done)`
   - Create, Read, Update, and Delete operations for tasks and projects
   - Intuitive interface for effortless work item management
@@ -19,50 +19,56 @@ Mini Jira Laravel is a sophisticated and feature-rich task management applicatio
   - Easy addition and management of custom task types and priorities `(In Plan)`
   - Subtask support for breaking down complex tasks into manageable units `(In Plan)`
   - Task dependency mapping to manage intricate workflow relationships `(In Plan)`
+  - Intuitive task filtering system `(Done)`
+  - Detailed task view with comprehensive information display `(Done)`
+ - Task deadline tracking with relative time display `(Done)`
 - **Time Management**: `(In Plan)`
   - Precise time tracking for each task
   - Estimation features to forecast task completion times
 - **Rich Content Support**: `(Partially Done)`
   - File attachment capabilities for comprehensive documentation `(Done)`
   - Rich text descriptions for detailed task information `(In Plan)`
+  **Task comments system**: `(Done)`
+  - Visual indicators for tasks with comments
+  - Task comments functionality with nested replies
 
-### 2. User Experience and Interface (Partially Implemented)
+### 2. User Experience and Interface (Implemented):
 - **Responsive Design**: `(Done)`
   - Fully adaptive layout ensuring seamless functionality across desktop, tablet, and mobile devices
   - Touch-friendly interface optimized for mobile users
   - Adaptive UI components that dynamically adjust to various screen sizes
-- **User Management**: `(Partially Done)`
-  - Granular user permissions tailored for diverse roles (e.g., developers, project managers, administrators) `(Done)`
-  - Smooth navigation complemented by role-based access control `(Done)`
-  - Extensive user profile customization options, including avatars and personal preferences `(In Plan)`
-  - Advanced team management features for user grouping and team-based permission assignment `(In Plan)`
-- **Authentication**: `(Partially Done)`
-  - Robust and secure login and registration system `(Done)`
-  - Password reset functionality for enhanced user convenience `(Done)`
+- **User Management**: `(Done)`
+  - Granular user permissions tailored for diverse roles (e.g., developers, project managers, administrators)
+  - Smooth navigation complemented by role-based access control
+  - Extensive user profile customization options, including avatars and personal preferences
+  - Advanced team management features for user grouping and team-based permission assignment
+- **Authentication**: `(Done)`
+  - Robust and secure login and registration system
+  - Password reset functionality for enhanced user convenience
   - Single Sign-On (SSO) integration capabilities for enterprise environments `(In Plan)`
 
-### 3. Project Visualization and Planning (Partially Implemented)
-- **Project Management Tools**: `(Partially Done)`
-  - Detailed project creation and management interface `(Done)`
-  - Task-project association for superior organization `(Done)`
+### 3. Project Visualization and Planning (Partially Implemented):
+- **Project Management Tools**: `(Done)`
+  - Detailed project creation and management interface
+  - Task-project association for superior organization
   - Project templates for rapid setup of common project structures `(In Plan)`
 - **Visual Planning Aids**: `(In Plan)`
   - Gantt chart visualization for comprehensive project timeline management
   - Interactive Kanban board view for intuitive task status management
   - Resource allocation and capacity planning tools for optimal team utilization
 
-### 4. Task Prioritization and Tracking (Partially Implemented)
-- **Priority Management**: `(Partially Done)`
-  - Flexible task priority setting and management `(Done)`
-  - Customizable priority levels to align with organizational needs `(In Plan)`
-  - Visual indicators for high-priority tasks `(Done)`
+### 4. Task Prioritization and Tracking (Implemented):
+- **Priority Management**: `(Done)`
+  - Flexible task priority setting and management
+  - Customizable priority levels to align with organizational needs
+  - Visual indicators for high-priority tasks
   - AI-driven suggestions for task prioritization based on due dates and dependencies `(In Plan)`
-- **Status Tracking**: `(Partially Done)`
-  - Real-time updates on task status changes `(Done)`
-  - Customizable workflow states to match specific team processes `(In Plan)`
+- **Status Tracking**: `(Done)`
+  - Real-time updates on task status changes
+  - Customizable workflow states to match specific team processes
   - Automated notifications for critical status changes `(In Plan)`
 
-### 5. Reporting and Analytics `(In Plan)`
+### 5. Reporting and Analytics `(In Plan)`:
 - **Comprehensive Dashboards**:
   - Dynamic dashboards displaying key performance indicators
   - Customizable report generation for tasks, projects, and user productivity
@@ -71,31 +77,33 @@ Mini Jira Laravel is a sophisticated and feature-rich task management applicatio
 - **Agile Metrics**:
   - Burndown charts and velocity tracking for agile methodology adherence
 
-### 6. Search and Filter Capabilities (Partially Implemented)
+### 6. Search and Filter Capabilities (Implemented):
 - **Advanced Search**: `(Done)`
   - Multi-criteria search functionality for precise results
   - Saved filters for quick access to frequently used views
 - **Full-Text Search**: `(In Plan)`
   - Comprehensive search across tasks, comments, and attachments
 
-### 7. Collaboration Tools (Partially Implemented)
+### 7. Collaboration Tools (Partially Implemented):
 - **Communication Features**: `(Partially Done)`
   - In-app messaging system for seamless team communication `(In Plan)`
   - Comment system on tasks and projects for detailed discussions `(Done)`
+  - Nested replies support `(Done)`
+  - Edit and delete functionality for comments `(Done)`
   - @mentions functionality for direct user notifications `(In Plan)`
 - **Schedule Coordination**: `(In Plan)`
   - Shared calendars for efficient team schedule management
 - **Third-Party Integration**: `(In Plan)`
   - Seamless integration with popular collaboration tools (e.g., Slack, Microsoft Teams)
 
-### 8. API and Integration `(In Plan)`
+### 8. API and Integration `(In Plan)`:
 - **RESTful API**:
   - Comprehensive API for third-party integrations and custom development
   - Webhook support enabling real-time data synchronization with external systems
 - **Security**:
   - OAuth 2.0 authentication for secure API access
 
-### 9. Security and Compliance (Partially Implemented)
+### 9. Security and Compliance (Partially Implemented):
 - **Enhanced Security Measures**: `(Partially Done)`
   - Two-factor authentication (2FA) for fortified account security `(In Plan)`
   - Regular security audits and penetration testing protocols `(In Plan)`
@@ -103,23 +111,35 @@ Mini Jira Laravel is a sophisticated and feature-rich task management applicatio
 - **Compliance**: `(In Plan)`
   - GDPR compliance features ensuring robust data protection
 
-### 10. Customization and Extensibility `(In Plan)`
+### 10. Customization and Extensibility `(In Plan)`:
 - **Flexible Customization**:
   - Custom fields for tasks and projects to capture organization-specific data
   - Pluggable architecture facilitating easy feature extensions
-- **Branding and Localization**:
+- **Branding and Localization**: `(Done)` 
   - Theming support for seamless brand alignment
   - Comprehensive localization and internationalization capabilities
+  - Localization support with multi-language capabilities
 
-### 11. Core Application Structure `(Implemented)`
-- **Console Commands**: `(Done)`
+### 11. Core Application Structure `(Done)`:
+- **Console Commands**:
   - Custom Artisan commands for task scheduling and maintenance
-- **Exception Handling**: `(Done)`
+- **Exception Handling**:
   - Centralized error handling and logging
-- **Middleware**: `(Done)`
+- **Middleware**:
   - Request/response filtering and modification
-- **Service Providers**: `(Done)`
+- **Service Providers**:
   - Application bootstrapping and dependency injection
+
+### 12. User Interface Components:
+- **Task List View**:
+  - Comprehensive table display with sortable columns
+  - Quick access to task details and actions
+- **Task Detail View**: 
+  - Detailed task information display
+  - Integrated comment system within task view
+- **Comment System UI**: 
+  - Threaded comment display for clear conversation flow
+  - Inline editing and deletion of comments
 
 ## Technology Stack
 
@@ -132,6 +152,11 @@ Mini Jira Laravel is a sophisticated and feature-rich task management applicatio
 - **CSS Framework**: Bootstrap 5.3 for responsive and attractive design
 - **Scripting**: JavaScript for dynamic and interactive client-side functionality
 - **Markup and Styling**: HTML5 & CSS3 for modern web structuring and styling
+- **Icon Library**: Font Awesome 6.6.0 for scalable vector icons
+- **JavaScript Libraries**:
+  - Alpine.js 3.14.1 for lightweight reactivity
+  - Axios 1.7.7 for promise-based HTTP client
+  - SweetAlert2 11.14.0 for beautiful, responsive popups
 
 ### Development and Build Tools
 - **Dependency Management**: 
@@ -216,3 +241,14 @@ This rich demo environment allows for an immediate and thorough exploration of t
 ## Contribution Guidelines
 
 We enthusiastically welcome contributions to enhance Mini Jira Laravel. For substantial changes or new feature proposals, please initiate by opening an issue to discuss your ideas and ensure alignment with the project's goals.
+
+### 12. User Interface Components `(Implemented)`
+- **Task List View**: `(Done)`
+  - Comprehensive table display with sortable columns
+  - Quick access to task details and actions
+- **Task Detail View**: `(Done)`
+  - Detailed task information display
+  - Integrated comment system within task view
+- **Comment System UI**: `(Done)`
+  - Threaded comment display for clear conversation flow
+  - Inline editing and deletion of comments
