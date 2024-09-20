@@ -19,11 +19,17 @@
                                     </div>
                                     <div>
                                         <a href="{{ route('task-types.edit', $taskType->id) }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i> {{ __('edit') }}</a>
-                                        <form action="{{ route('task-types.destroy', $taskType->id) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('{{ __('task_types_confirm_delete') }}')" {{ $taskType->tasks->count() > 0 ? 'disabled' : '' }}><i class="fas fa-trash-alt"></i> {{ __('delete') }}</button>
-                                        </form>
+                                        @if ($taskType->tasks->count() > 0)
+                                            <span class="btn btn-sm btn-outline-danger opacity-75" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('cannot_delete_task_type_with_tasks', ['count' => $taskType->tasks->count()]) }}">
+                                                <i class="fas fa-info-circle"></i> {{ __('delete') }}
+                                            </span>
+                                        @else
+                                            <form action="{{ route('task-types.destroy', $taskType->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('{{ __('task_types_confirm_delete') }}')"><i class="fas fa-trash-alt"></i> {{ __('delete') }}</button>
+                                            </form>
+                                        @endif
                                     </div>
                                 </li>
                             @endforeach

@@ -81,6 +81,11 @@
         @yield('content')
     </main>
 </div>
+
+<footer class="text-center py-3">
+    <p>Created with love <i class="fas fa-heart text-danger"></i></p>
+</footer>
+
 @stack('scripts')
 </body>
 </html>

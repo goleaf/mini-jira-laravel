@@ -89,5 +89,7 @@
     "task_priority_medium": "Medium priority",
     "task_priority_low": "Low priority",
     "task_type_required": "Task type is required.",
-    "task_status_required": "Task status is required."
+    "task_status_required": "Task status is required.",
+    "cannot_delete_status_with_tasks": "Cannot delete status with associated task(s)",
+    "cannot_delete_task_type_with_tasks": "Cannot delete task type with associated task(s)"
 }

@@ -45,7 +45,8 @@ class TaskController extends Controller
 
     private function buildTaskQuery(Request $request)
     {
-        $query = Task::with(['taskCreator', 'assignedUser', 'assignedTester', 'taskType', 'taskStatus']);
+        $query = Task::with(['taskCreator', 'assignedUser', 'assignedTester', 'taskType', 'taskStatus'])
+                     ->withCount('comments');
 
         $filters = $this->getFilters();
 
@@ -160,7 +161,7 @@ class TaskController extends Controller
 
     private function getPaginationCount(Request $request)
     {
-        return $request->session()->get('paginationCount', 10);
+        return $request->session()->get('paginationCount', 15);
     }
 
     private function getViewData($tasks)

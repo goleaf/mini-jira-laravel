@@ -12,15 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->string('password');
-            $table->boolean('is_admin')->default(false);
+            $table->bigIncrements('id');
+            $table->string('name')->index();
+            $table->string('email', 191)->unique();
+            $table->string('password', 60);
+            $table->boolean('is_admin')->default(false)->index();
             $table->string('api_token', 80)->unique()->nullable()->default(null);
             $table->rememberToken();
             $table->softDeletes();
             $table->timestamps();
+
+            $table->index(['created_at', 'updated_at']);
         });
     }
 
