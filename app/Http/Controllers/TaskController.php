@@ -93,12 +93,12 @@ class TaskController extends Controller
         $this->logAction(__('action_created'), $task->id);
         return $this->redirectToIndex(__('task_created_success'));
     }
-
+    
     public function show(Task $task)
     {
-        $task->load(['taskCreator', 'assignedUser', 'assignedTester', 'taskType', 'taskStatus', 'comments']);
+        $comments = $task->comments()->whereNull('parent_id')->with('user', 'replies')->get();
         $differenceInDays = $this->calculateDaysDifference($task->task_deadline_date);
-        return view('task.show', compact('task', 'differenceInDays'));
+        return view('task.show', compact('task', 'comments', 'differenceInDays'));
     }
 
     public function edit(Task $task)

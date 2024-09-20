@@ -3,9 +3,9 @@
 @section('content')
 
     <div class="mb-4 ms-0 me-0 ps-4 pe-4 pt-4 pb-3 bg-white rounded shadow">
-
-        <table class="table align-middle">
-            <thead>
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle">
+                <thead class="table-light">
                 <tr>
                     <th scope="col" class="text-nowrap"><i class="fas fa-calendar-plus me-2"></i>{{ __('date_created') }}</th>
                     <th scope="col" class="text-nowrap"><i class="fas fa-calendar-alt me-2"></i>{{ __('task_deadline') }}</th>
@@ -62,7 +62,7 @@
             @endif
             </tbody>
         </table>
-
+        </div>
         <div class="row">
             <div class="col-md-10">
                 {{ $tasks->links() }}

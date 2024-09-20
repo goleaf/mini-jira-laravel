@@ -25,7 +25,7 @@ class Task extends Model
 
     public function comments()
     {
-        return $this->hasMany(Comment::class)->whereNull('parent_id');
+        return $this->hasMany(Comment::class)->whereNull('parent_id')->with('user', 'replies');
     }
 
     public function taskCreator()
@@ -55,26 +55,31 @@ class Task extends Model
 
     public function getTaskCreatorTasksCountAttribute()
     {
-        return $this->taskCreator->tasks_created_count;
+        return $this->taskCreator->tasks_created_count ?? 0;
     }
 
     public function getAssignedUserTasksCountAttribute()
     {
-        return $this->assignedUser->tasks_assigned_count;
+        return $this->assignedUser->tasks_assigned_count ?? 0;
     }
 
     public function getAssignedTesterTasksCountAttribute()
     {
-        return $this->assignedTester->tasks_assigned_count;
+        return $this->assignedTester->tasks_assigned_count ?? 0;
     }
 
     public function getTaskTypeCountAttribute()
     {
-        return $this->taskType->tasks_count;
+        return $this->taskType->tasks_count ?? 0;
     }
 
     public function getTaskStatusCountAttribute()
     {
-        return $this->taskStatus->tasks_count;
+        return $this->taskStatus->tasks_count ?? 0;
+    }
+
+    public function allComments()
+    {
+        return $this->hasMany(Comment::class);
     }
 }
