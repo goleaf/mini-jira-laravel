@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('task_statuses', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('name')->index();
+            $table->string('name', 100)->unique();
             $table->softDeletes();
             $table->timestamps();
         });

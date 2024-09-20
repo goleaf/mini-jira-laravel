@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('title', 255)->index();
+            $table->string('title', 255);
             $table->text('description');
-            $table->date('task_deadline_date')->index();
+            $table->date('task_deadline_date');
             $table->unsignedBigInteger('task_creator_user_id');
             $table->unsignedBigInteger('assigned_user_id');
             $table->unsignedBigInteger('assigned_tester_user_id');
@@ -30,9 +30,11 @@ return new class extends Migration
             $table->foreign('task_type_id')->references('id')->on('task_types')->onDelete('cascade');
             $table->foreign('task_status_id')->references('id')->on('task_statuses')->onDelete('cascade');
 
-            $table->index(['task_creator_user_id', 'assigned_user_id']);
-            $table->index('assigned_tester_user_id');
-            $table->index(['task_type_id', 'task_status_id']);
+            $table->index(['task_creator_user_id', 'assigned_user_id', 'assigned_tester_user_id', 'task_type_id', 'task_status_id'], 'task_main_index');
+
+            $table->index(['title', 'task_deadline_date'], 'task_title_deadline_index');
+
+            $table->index(['deleted_at', 'created_at'], 'task_deletion_creation_index');
         });
     }
 

@@ -20,9 +20,6 @@ return new class extends Migration
             $table->timestamp('last_used_at')->nullable()->index();
             $table->timestamp('expires_at')->nullable()->index();
             $table->timestamps();
-
-            // Remove the duplicate index
-            // $table->index(['tokenable_type', 'tokenable_id']);
         });
     }
 

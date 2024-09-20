@@ -13,11 +13,14 @@ return new class extends Migration
     {
         Schema::create('logs', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('action');
-            $table->integer('object_id');
-            $table->string('type');
-            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('action', 50)->index();
+            $table->unsignedBigInteger('object_id')->index();
+            $table->string('type', 50)->index();
+            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete()->index();
             $table->timestamps();
+
+            $table->index(['action', 'object_id', 'type']);
+            $table->index(['created_at', 'action']);
         });
     }
 

@@ -24,8 +24,16 @@ return new class extends Migration
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('parent_id')->references('id')->on('comments')->onDelete('cascade');
 
-            $table->index(['task_id', 'user_id']);
+            $table->index('task_id');
+            $table->index('user_id');
             $table->index('parent_id');
+            $table->index('deleted_at');
+            $table->index('created_at');
+            $table->index('updated_at');
+
+            $table->index(['task_id', 'user_id']);
+            $table->index(['task_id', 'created_at']);
+            $table->index(['user_id', 'created_at']);
         });
     }
 
