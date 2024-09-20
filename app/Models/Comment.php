@@ -33,6 +33,21 @@ class Comment extends Model
 
     public function replies()
     {
-        return $this->hasMany(Comment::class, 'parent_id');
+        return $this->hasMany(Comment::class, 'parent_id')->with('user', 'replies');
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(Comment::class, 'parent_id');
+    }
+
+    public function canEdit(User $user)
+    {
+        return $this->user_id === $user->id;
+    }
+
+    public function canDelete(User $user)
+    {
+        return $this->user_id === $user->id || $user->is_admin;
     }
 }

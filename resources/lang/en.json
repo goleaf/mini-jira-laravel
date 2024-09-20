@@ -105,5 +105,11 @@
     "from": "From",
     "to": "To",
     "creation_date": "Creation date",
-    "deadline_date": "Deadline date"
+    "deadline_date": "Deadline date",
+    "cancel": "Cancel",
+    "comment_updated": "Comment updated",
+    "comment_deleted": "Comment deleted",
+    "comment_updated_success": "Comment updated successfully",
+    "comment_deleted_success": "Comment deleted successfully",
+    "comment_delete_error": "Error deleting comment"
 }

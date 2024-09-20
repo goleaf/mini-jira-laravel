@@ -1,14 +1,14 @@
 <?php
 
-    use App\Http\Controllers\Auth\LoginRegisterController;
-    use App\Http\Controllers\CommentController;
-    use App\Http\Controllers\LogsController;
-    use App\Http\Controllers\TaskController;
-    use App\Http\Controllers\TaskStatusController;
-    use App\Http\Controllers\TaskTypeController;
-    use App\Http\Controllers\UserController;
-    use Illuminate\Support\Facades\Route;
-    use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Auth\LoginRegisterController;
+use App\Http\Controllers\CommentController;
+use App\Http\Controllers\LogsController;
+use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TaskStatusController;
+use App\Http\Controllers\TaskTypeController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProfileController;
 
 Route::get('/', [TaskController::class, 'index'])->name('home');
 
@@ -37,6 +37,8 @@ Route::middleware(['auth'])->group(function () {
 
     // comments
     Route::post('/tasks/{task}/comments', [CommentController::class, 'store'])->name('comments.store');
+    Route::resource('comments', CommentController::class)->only(['store', 'destroy']);
+    Route::put('/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
 
     Route::get('user/{user}/', [UserController::class, 'userDashboard'])->name('user.dashboard');
 
@@ -65,7 +67,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::resources(['task' => TaskController::class ]);
 
-     
 });
 
 

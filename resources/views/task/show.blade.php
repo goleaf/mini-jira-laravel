@@ -78,14 +78,13 @@
             </div>
             <div class="card-body bg-white p-4">
                 <div class="row">
-                    <div class="col-md-12">
-                        <form method="post" action="{{ route('comments.store', ['task' => $task->id]) }}">
+                    <div class="col-md-12 mb-3">
+                        <form method="post" action="{{ route('comments.store', ['task_id' => $task->id]) }}" class="d-flex align-items-center">
                             @csrf
-                            <div class="form-group">
-                                <textarea class="form-control" name="body" required></textarea>
-                                <input type="hidden" name="task_id" value="{{ $task->id }}" />
+                            <div class="form-group flex-grow-1 me-2">
+                                <textarea class="form-control auto-height" name="body" required rows="1"></textarea>
                             </div>
-                            <div class="form-group mt-2">
+                            <div class="form-group">
                                 <button type="submit" class="btn btn-success">
                                     <i class="fas fa-reply"></i> {{ __('reply') }}
                                 </button>
@@ -93,11 +92,47 @@
                         </form>
                     </div>
                 </div>
+                @include('task.comments', ['comments' => $comments])
 
-                @include('task.comments', ['comments' => $task->comments, 'task_id' => $task->id])
             </div>
         </div>
     </div>
-
-
 @endsection
+
+@push('scripts')
+<script>
+
+function toggleEditForm(commentId) {
+    const commentBody = document.getElementById(`comment-body-${commentId}`);
+    const editForm = document.getElementById(`edit-form-${commentId}`);
+    const replyButton = document.getElementById(`reply-button-${commentId}`);
+
+    if (editForm.style.display === 'none') {
+        commentBody.style.display = 'none';
+        editForm.style.display = 'block';
+        replyButton.style.display = 'none';
+    } else {
+        commentBody.style.display = 'block';
+        editForm.style.display = 'none';
+        replyButton.style.display = 'inline-block';
+    }
+}
+
+function toggleReplyForm(commentId) {
+    const replyForm = document.getElementById(`reply-form-${commentId}`);
+    replyForm.style.display = replyForm.style.display === 'none' ? 'block' : 'none';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const textareas = document.querySelectorAll('.auto-height');
+    textareas.forEach(textarea => {
+        textarea.addEventListener('input', autoResize, false);
+    });
+
+    function autoResize() {
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
+    }
+});
+</script>
+@endpush
