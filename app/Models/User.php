@@ -26,24 +26,39 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    public function tasksCreated()
+    {
+        return $this->hasMany(Task::class, 'task_creator_user_id');
+    }
+
+    public function tasksAssigned()
+    {
+        return $this->hasMany(Task::class, 'assigned_user_id');
+    }
+
+    public function tasks()
+    {
+        return $this->tasksCreated()->union($this->tasksAssigned());
+    }
+
     public function noOfTaskCreated()
     {
-        return $this->getTasksCreated()->count();
+        return $this->tasksCreated()->count();
     }
 
     public function getTasksCreated()
     {
-        return Task::where('task_creator_user_id', $this->id)->get();
+        return $this->tasksCreated;
     }
 
     public function noOfTaskAssigned()
     {
-        return $this->getTasksAssigned()->count();
+        return $this->tasksAssigned()->count();
     }
 
     public function getTasksAssigned()
     {
-        return Task::where('assigned_user_id', $this->id)->get();
+        return $this->tasksAssigned;
     }
 
     public function totalTasks()
@@ -53,6 +68,6 @@ class User extends Authenticatable
 
     public function getAllUserTasks()
     {
-        return $this->getTasksCreated()->merge($this->getTasksAssigned());
+        return $this->tasksCreated->merge($this->tasksAssigned);
     }
 }

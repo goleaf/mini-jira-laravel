@@ -12,7 +12,7 @@
                     <th scope="col" class="text-nowrap"><i class="fas fa-heading me-2"></i>{{ __('task_title') }}</th>
                     <th scope="col" class="text-nowrap"><i class="fas fa-user-plus me-2"></i>{{ __('task_created_by') }}</th>
                     <th scope="col" class="text-nowrap"><i class="fas fa-user-check me-2"></i>{{ __('task_assigned_to') }}</th>
-                    <th scope="col" class="text-nowrap"><i class="fas fa-user-shield me-2"></i>{{ __('task_assigned_to_tester') }}</th>
+                    <th scope="col" class="text-nowrap"><i class="fas fa-user-shield me-2"></i>{{ __('task_assigned_to_qa') }}</th>
                     <th scope="col" class="text-nowrap"><i class="fas fa-info-circle me-2"></i>{{ __('status') }}</th>
                     <th scope="col" class="text-nowrap"><i class="fas fa-tasks me-2"></i>{{ __('task_type') }}</th>
                     <th scope="col" class="text-nowrap"><i class="fas fa-cogs me-2"></i>{{ __('actions') }}</th>
@@ -27,7 +27,7 @@
                                 <option value="">{{ __('select') }}</option>
                                 @foreach($taskCreators as $taskCreator)
                                     <option value="{{ $taskCreator->id }}" {{ request('task_creator_user_id') == $taskCreator->id ? 'selected' : '' }}>
-                                        {{ $taskCreator->name }}
+                                        {{ $taskCreator->name }} ({{ $taskCreator->tasksCreated()->count() }})
                                     </option>
                                 @endforeach
                             </select>
@@ -37,7 +37,7 @@
                                 <option value="">{{ __('select') }}</option>
                                 @foreach($assignedUsers as $assignedUser)
                                     <option value="{{ $assignedUser->id }}" {{ request('assigned_user_id') == $assignedUser->id ? 'selected' : '' }}>
-                                        {{ $assignedUser->name }}
+                                        {{ $assignedUser->name }} ({{ $assignedUser->tasksAssigned()->count() }})
                                     </option>
                                 @endforeach
                             </select>
@@ -47,7 +47,7 @@
                                 <option value="">{{ __('select') }}</option>
                                 @foreach($assignedTesters as $assignedTester)
                                     <option value="{{ $assignedTester->id }}" {{ request('assigned_tester_user_id') == $assignedTester->id ? 'selected' : '' }}>
-                                        {{ $assignedTester->name }}
+                                        {{ $assignedTester->name }} ({{ $assignedTester->tasksAssigned()->count() }})
                                     </option>
                                 @endforeach
                             </select>
@@ -57,7 +57,7 @@
                                 <option value="">{{ __('select') }}</option>
                                 @foreach($taskStatuses as $taskStatus)
                                     <option value="{{ $taskStatus->id }}" {{ request('task_status_id') == $taskStatus->id ? 'selected' : '' }}>
-                                        {{ $taskStatus->name }}
+                                        {{ $taskStatus->name }} ({{ $taskStatus->tasks()->count() }})
                                     </option>
                                 @endforeach
                             </select>
@@ -67,7 +67,7 @@
                                 <option value="">{{ __('select') }}</option>
                                 @foreach($taskTypes as $taskType)
                                     <option value="{{ $taskType->id }}" {{ request('task_type_id') == $taskType->id ? 'selected' : '' }}>
-                                        {{ $taskType->name }}
+                                        {{ $taskType->name }} ({{ $taskType->tasks()->count() }})
                                     </option>
                                 @endforeach
                             </select>
@@ -88,30 +88,36 @@
                         <td class="text-nowrap">{{ $task->task_deadline_date }}</td>
                         <td class="text-nowrap">
                             <a href="{{ route('tasks.show', ['task' => $task->id]) }}" class="text-decoration-none">
-                                <i class="fas fa-tasks me-2"></i>{{ $task->title }}
+                                {{ $task->title }}
                             </a>
                             @if($task->comments_count > 0)
-                                <i class="fas fa-comments ms-2"></i> {{$task->comments_count}}
+                                <span class="ms-2 badge bg-secondary">
+                                    <i class="fas fa-comments"></i> {{$task->comments_count}}
+                                </span>
                             @endif
                         </td>
-                        <td class="text-nowrap">{{ $task->taskCreator->name }}</td>
-                        <td class="text-nowrap">{{ $task->assignedUser->name ?? __('not_assigned') }}</td>
-                        <td class="text-nowrap">{{ $task->assignedTester->name ?? __('not_assigned') }}</td>
-                        <td class="text-nowrap">{{ $task->taskStatus->name ?? __('deleted') }}</td>
-                        <td class="text-nowrap">{{ $task->taskType->name ?? __('deleted') }}</td>
+                        <td class="text-nowrap">{{ $task->taskCreator->name }} <span class="badge bg-secondary">{{ $task->taskCreatorTasksCount }}</span></td>
+                        <td class="text-nowrap">{{ $task->assignedUser->name ?? __('not_assigned') }} <span class="badge bg-secondary">{{ $task->assignedUserTasksCount ?? 0 }}</span></td>
+                        <td class="text-nowrap">{{ $task->assignedTester->name ?? __('not_assigned') }} <span class="badge bg-secondary">{{ $task->assignedTesterTasksCount ?? 0 }}</span></td>
+                        <td class="text-nowrap">{{ $task->taskStatus->name ?? __('deleted') }} <span class="badge bg-secondary">{{ $task->taskStatusCount ?? 0 }}</span></td>
+                        <td class="text-nowrap">{{ $task->taskType->name ?? __('deleted') }} <span class="badge bg-secondary">{{ $task->taskTypeCount ?? 0 }}</span></td>
                         <td class="text-nowrap">
-                            <a href="{{ route('tasks.edit', $task->id) }}" class="btn btn-primary btn-sm"><i class="fas fa-edit float-end"></i></a>
+                            <a href="{{ route('tasks.edit', $task->id) }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
                             <form action="{{ route('tasks.destroy', $task->id) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('{{ __('confirm_delete_task') }}')"><i class="fas fa-trash float-end"></i></button>
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('{{ __('confirm_delete_task') }}')">
+                                    <i class="fas fa-trash-alt"></i> Delete
+                                </button>
                             </form>
                         </td>
                     </tr>
                 @endforeach
             @else
                 <tr>
-                    <td colspan="9"><i class="fas fa-exclamation-circle me-2"></i>{{ __('no_tasks_found') }}</td>
+                    <td colspan="9">{{ __('no_tasks_found') }}</td>
                 </tr>
             @endif
             </tbody>

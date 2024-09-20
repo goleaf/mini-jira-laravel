@@ -1,75 +1,38 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container bg-white border p-3 mb-4 p-4 pb-3 bg-white rounded shadow">
-        <div class="row">
-            <div class="col-md-12">
-                <h2>{{ __('task_types.title') }}</h2>
-                <a href="{{ route('task-types.create') }}" class="btn btn-primary">{{ __('task_types.create_new') }}</a>
-                <table class="table mt-3">
-                    <thead>
-                    <tr>
-                        <th>{{ __('task_types.table.title') }}</th>
-                        <th>{{ __('task_types.table.actions') }}</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach ($taskTypes as $taskType)
-                        <tr>
-                            <td class="align-middle">{{ $taskType->name }}</td>
-                            <td class="align-middle">
-                                <a href="{{ route('task-types.edit', $taskType->id) }}" class="btn btn-primary">{{ __('task_types.edit') }}</a>
-                                <form action="{{ route('task-types.destroy', $taskType->id) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger" onclick="return confirm('{{ __('task_types.confirm_delete') }}')">{{ __('task_types.delete') }}</button>
-                                </form>
-                            </td>
-                        </tr>
-                    @endforeach
-                    </tbody>
-                </table>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header"><i class="fas fa-list"></i> {{ __('task_types') }}</div>
+
+                    <div class="card-body">
+                        @include('partials.flash-messages') 
+                        
+                        <ul class="list-group">
+                            @foreach ($taskTypes as $taskType)
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fas fa-tasks"></i> {{ $taskType->name }}
+                                        <span class="badge bg-secondary rounded-pill ms-2">{{ $taskType->tasks->count() }}</span>
+                                    </div>
+                                    <div>
+                                        <a href="{{ route('task-types.edit', $taskType->id) }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i> {{ __('edit') }}</a>
+                                        <form action="{{ route('task-types.destroy', $taskType->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('{{ __('task_types_confirm_delete') }}')" {{ $taskType->tasks->count() > 0 ? 'disabled' : '' }}><i class="fas fa-trash-alt"></i> {{ __('delete') }}</button>
+                                        </form>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+
+                        <a href="{{ route('task-types.create') }}" class="btn btn-primary mb-3 mt-4"><i class="fas fa-plus"></i> {{ __('create') }}</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 @endsection
-
-@push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const deleteForms = document.querySelectorAll('form');
-        deleteForms.forEach(form => {
-            form.addEventListener('submit', async function (event) {
-                event.preventDefault();
-                if (!confirm('{{ __('task_types.confirm_delete') }}')) {
-                    return;
-                }
-                try {
-                    const response = await fetch(form.action, {
-                        method: 'POST',
-                        body: new FormData(form),
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                        }
-                    });
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    const result = await response.json();
-                    if (result.success) {
-                        alert('{{ __('task_type_controller.type_deleted') }}');
-                        window.location.reload();
-                    } else {
-                        throw new Error(result.message || 'Unknown error');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('{{ __('general.error') }}');
-                } finally {
-                    console.log('Form submission attempt finished.');
-                }
-            });
-        });
-    });
-</script>
-@endpush

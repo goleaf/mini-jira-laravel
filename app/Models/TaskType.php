@@ -11,4 +11,9 @@ class TaskType extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = ['name'];
+
+    public function tasks()
+    {
+        return $this->hasMany(Task::class);
+    }
 }

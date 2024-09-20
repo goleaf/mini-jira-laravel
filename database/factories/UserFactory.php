@@ -15,7 +15,12 @@ class UserFactory extends Factory
     /**
      * The name of the factory's corresponding model.
      */
-    protected static ?string $model = User::class;
+    protected $model = User::class;
+
+    /**
+     * The default password for all users.
+     */
+    protected static $defaultPassword;
 
     /**
      * Define the model's default state.
@@ -25,10 +30,9 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
+            'name' => $this->faker->name(),
+            'email' => $this->faker->unique()->safeEmail(),
+            'password' => static::$defaultPassword ??= Hash::make('password'),
             'remember_token' => Str::random(10),
             'is_admin' => false,
         ];
@@ -39,9 +43,7 @@ class UserFactory extends Factory
      */
     public function admin(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'is_admin' => true,
-        ]);
+        return $this->state(['is_admin' => true]);
     }
 
     /**
@@ -49,8 +51,6 @@ class UserFactory extends Factory
      */
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
-        ]);
+        return $this;
     }
 }

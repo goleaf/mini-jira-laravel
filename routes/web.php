@@ -10,7 +10,7 @@
     use Illuminate\Support\Facades\Route;
 
 
-    Route::get('/', [TaskController::class, 'index'])->name('home');
+Route::get('/', [TaskController::class, 'index'])->name('home');
 
 Route::controller(LoginRegisterController::class)->group(function() {
     Route::get('/register', 'register')->name('register');
@@ -24,12 +24,14 @@ Route::controller(LoginRegisterController::class)->group(function() {
 Route::middleware(['auth'])->group(function () {
 
     // tasks
-    Route::get('/', [TaskController::class, 'index'])->name('tasks.index');
-    Route::get('/tasks/create', [taskController::class, 'create'])->name('tasks.create');
+    Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
+    Route::get('/tasks/create', [TaskController::class, 'create'])->name('tasks.create');
+    Route::post('/tasks', [TaskController::class, 'store'])->name('tasks.store');
     Route::get('/tasks/{task}', [TaskController::class, 'show'])->name('tasks.show');
     Route::get('/tasks/{task}/edit', [TaskController::class, 'edit'])->name('tasks.edit');
-    Route::post('/tasks/', [TaskController::class, 'update'])->name('tasks.update');
-    Route::post('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
+    Route::put('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
+    Route::patch('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
+    Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
 
     Route::post('/tasks/update-pagination-count', [TaskController::class, 'updatePaginationCount'])->name('tasks.update-pagination-count');
 

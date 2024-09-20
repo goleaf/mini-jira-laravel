@@ -1,34 +1,37 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container bg-white border p-3 mb-4 p-4 pb-3 bg-white rounded shadow">
-        <div class="row">
-            <div class="col-md-12">
-                <h2>{{ __('messages.task_statuses') }}</h2>
-                <a href="{{ route('task-statuses.create') }}" class="btn btn-primary">{{ __('messages.create_new_task_status') }}</a>
-                <table class="table mt-3">
-                    <thead>
-                    <tr>
-                        <th>{{ __('messages.title') }}</th>
-                        <th>{{ __('messages.actions') }}</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach ($taskStatuses as $taskStatus)
-                        <tr>
-                            <td class="align-middle">{{ $taskStatus->name }}</td>
-                            <td class="align-middle">
-                                <a href="{{ route('task-statuses.edit', $taskStatus->id) }}" class="btn btn-primary">{{ __('messages.edit') }}</a>
-                                <form action="{{ route('task-statuses.destroy', $taskStatus->id) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger" onclick="return confirm('{{ __('messages.confirm_delete_task_status') }}')">{{ __('messages.delete') }}</button>
-                                </form>
-                            </td>
-                        </tr>
-                    @endforeach
-                    </tbody>
-                </table>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header"><i class="fas fa-tasks"></i> {{ __('task_statuses') }}</div>
+
+                    <div class="card-body">
+                        @include('partials.flash-messages') 
+                        
+                        <ul class="list-group">
+                            @foreach ($taskStatuses as $taskStatus)
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>
+                                        <i class="fas fa-tag"></i> {{ $taskStatus->name }}
+                                        <span class="badge bg-secondary rounded-pill ms-2">{{ $taskStatus->tasks->count() }}</span>
+                                    </span>
+                                    <div>
+                                        <a href="{{ route('task-statuses.edit', $taskStatus->id) }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i> {{ __('edit') }}</a>
+                                        <form action="{{ route('task-statuses.destroy', $taskStatus->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('{{ __('confirm_delete_status') }}')" {{ $taskStatus->tasks->count() > 0 ? 'disabled' : '' }}><i class="fas fa-trash-alt"></i> {{ __('delete') }}</button>
+                                        </form>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+
+                        <a href="{{ route('task-statuses.create') }}" class="btn btn-primary mb-3 mt-4"><i class="fas fa-plus-circle"></i> {{ __('create') }}</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

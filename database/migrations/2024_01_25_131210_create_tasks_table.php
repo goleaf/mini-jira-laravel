@@ -23,6 +23,13 @@ return new class extends Migration
             $table->foreignId('task_status_id')->constrained('task_statuses')->onDelete('cascade');
             $table->softDeletes();
             $table->timestamps();
+
+            $table->index('task_creator_user_id');
+            $table->index('assigned_user_id');
+            $table->index('assigned_tester_user_id');
+            
+            $table->index('task_type_id');
+            $table->index('task_status_id');
         });
     }
 

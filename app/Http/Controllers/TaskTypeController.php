@@ -16,7 +16,7 @@ class TaskTypeController extends Controller
 
     public function create()
     {
-        return view('task_types.create');
+        return view('task_types.form');
     }
 
     public function store(Request $request)
@@ -31,7 +31,7 @@ class TaskTypeController extends Controller
 
     public function edit(TaskType $taskType)
     {
-        return view('task_types.edit', compact('taskType'));
+        return view('task_types.form', compact('taskType'));
     }
 
     public function update(Request $request, TaskType $taskType)
@@ -46,6 +46,12 @@ class TaskTypeController extends Controller
 
     public function destroy(TaskType $taskType)
     {
+        if ($taskType->tasks()->exists()) {
+            return redirect()->route('task-types.index')
+                ->with('error', __('cannot_delete_task_type_with_tasks'))
+                ->withErrors(['delete' => __('task_type_has_associated_tasks')]);
+        }
+
         $taskType->delete();
 
         LogService::logAction(__('action_deleted'), $taskType->id, 'task_type');

@@ -10,7 +10,14 @@ class Comment extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['task_id', 'user_id', 'body', 'parent_id'];
+    protected $guarded = [];
+
+    protected $fillable = [
+        'task_id',
+        'user_id',
+        'body',
+        'parent_id'
+    ];
 
     protected $dates = ['deleted_at'];
 

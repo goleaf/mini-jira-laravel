@@ -6,54 +6,55 @@
     <div class="mb-4 ms-5 me-5 ps-4 pe-4 pb-3 bg-white rounded shadow">
         <div class="row justify-content-center">
             <div class="col-md-12">
-                <div class="card-header text-white">
-                    {{ __('tasks.task_details') }}
-                </div>
-                <div class="card-body bg-light">
-                    <div class="d-flex justify-content-end mt-3 p-4">
-                        <a href="{{ route('tasks.edit', ['task' => $task->id]) }}" class="btn btn-primary me-1">{{ __('tasks.edit') }}</a>
-                        <form method="post" action="{{ route('tasks.destroy', ['task' => $task->id]) }}" onsubmit="return confirm('{{ __('tasks.confirm_deletion') }}')">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h2 class="mt-3">{{ $task->title }}</h2>
+                    <div>
+                        <a href="{{ route('tasks.edit', ['task' => $task->id]) }}" class="btn btn-primary me-1">
+                            <i class="fas fa-edit"></i> {{ __('edit') }}
+                        </a>
+                        <form method="post" action="{{ route('tasks.destroy', ['task' => $task->id]) }}" onsubmit="return confirm('{{ __('delete_task_confirmation') }}')" class="d-inline">
                             @csrf
-                            <button type="submit" class="btn btn-danger">{{ __('tasks.delete') }}</button>
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash-alt"></i> {{ __('delete') }}
+                            </button>
                         </form>
                     </div>
+                </div>
+                <div class="card-body bg-light">
                     <table class="table table-bordered">
                         <tbody>
                         <tr>
-                            <th scope="row" class="fw-bold">{{ __('tasks.task_title') }}:</th>
-                            <td>{{ $task->title }}</td>
+                            <th scope="row" class="fw-bold text-nowrap align-middle"><i class="fas fa-calendar-alt ps-2"></i> {{ __('date_created') }}</th>
+                            <td class="align-middle">{{ $task->created_at->format('Y-m-d') }}</td>
                         </tr>
                         <tr>
-                            <th scope="row" class="fw-bold">{{ __('tasks.date_created') }}</th>
-                            <td>{{ date_format($task->created_at, 'Y-m-d') }}</td>
+                            <th scope="row" class="fw-bold text-nowrap align-middle"><i class="fas fa-hourglass-end ps-2"></i> {{ __('task_deadline') }}</th>
+                            <td class="align-middle">{{ $task->task_deadline_date }} ({{ $differenceInDays }})</td>
                         </tr>
                         <tr>
-                            <th scope="row" class="fw-bold">{{ __('tasks.deadline_date') }}</th>
-                            <td>{{ date('Y-m-d', strtotime($task->task_deadline_date)) }} ({{ $differenceInDays }})</td>
+                            <th scope="row" class="fw-bold text-nowrap align-middle"><i class="fas fa-user-plus ps-2"></i> {{ __('task_created_by') }}</th>
+                            <td class="align-middle">{{ $task->taskCreator->name }}</td>
                         </tr>
                         <tr>
-                            <th scope="row" class="fw-bold">{{ __('tasks.created_by') }}</th>
-                            <td>{{ $task->getTaskCreatorUser() }}</td>
+                            <th scope="row" class="fw-bold text-nowrap align-middle"><i class="fas fa-user-check ps-2"></i> {{ __('task_assigned_to') }}</th>
+                            <td class="align-middle">{{ $task->assignedUser->name ?? __('not_assigned') }}</td>
                         </tr>
                         <tr>
-                            <th scope="row" class="fw-bold">{{ __('tasks.assigned_to') }}</th>
-                            <td>{{ $task->getAssignedUser() }}</td>
+                            <th scope="row" class="fw-bold text-nowrap align-middle"><i class="fas fa-user-shield ps-2"></i> {{ __('task_assigned_to_qa') }}</th>
+                            <td class="align-middle">{{ $task->assignedTester->name ?? __('not_assigned') }}</td>
                         </tr>
                         <tr>
-                            <th scope="row" class="fw-bold">{{ __('tasks.assigned_to_tester') }}</th>
-                            <td>{{ $task->getAssignedTester() }}</td>
+                            <th scope="row" class="fw-bold text-nowrap align-middle"><i class="fas fa-info-circle ps-2"></i> {{ __('status') }}</th>
+                            <td class="align-middle">{{ $task->taskStatus->name ?? __('deleted') }}</td>
                         </tr>
                         <tr>
-                            <th scope="row" class="fw-bold">{{ __('tasks.status') }}</th>
-                            <td>{{ $task->getTaskStatusId->name ?? __('tasks.status_deleted') }}</td>
+                            <th scope="row" class="fw-bold text-nowrap align-middle"><i class="fas fa-tasks ps-2"></i> {{ __('task_type') }}</th>
+                            <td class="align-middle">{{ $task->taskType->name ?? __('deleted') }}</td>
                         </tr>
                         <tr>
-                            <th scope="row" class="fw-bold">{{ __('tasks.task_type') }}</th>
-                            <td>{{ $task->getTaskTypeId->name ?? __('tasks.type_deleted') }}</td>
-                        </tr>
-                        <tr>
-                            <th scope="row" class="fw-bold">{{ __('tasks.details') }}</th>
-                            <td>{{ $task->description }}</td>
+                            <th scope="row" class="fw-bold text-nowrap align-middle"><i class="fas fa-file-alt ps-2"></i> {{ __('task_details') }}</th>
+                            <td class="align-middle">{{ $task->description }}</td>
                         </tr>
                         </tbody>
                     </table>
@@ -73,7 +74,7 @@
     <div class="container mt-2">
         <div class="card">
             <div class="card-header p-4">
-                {{ __('tasks.task') }}: {{ $task->title }}
+                {{ __('title') }}: {{ $task->title }}
             </div>
             <div class="card-body bg-white p-4">
                 <div class="row">
@@ -85,7 +86,9 @@
                                 <input type="hidden" name="task_id" value="{{ $task->id }}" />
                             </div>
                             <div class="form-group mt-2">
-                                <input type="submit" class="btn btn-success" value="{{ __('tasks.add_comment') }}" />
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-reply"></i> {{ __('reply') }}
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -96,37 +99,5 @@
         </div>
     </div>
 
-    @push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const forms = document.querySelectorAll('form');
-            forms.forEach(form => {
-                form.addEventListener('submit', function(event) {
-                    event.preventDefault();
-                    try {
-                        // Additional client-side validation can be added here
-                        form.submit();
-                    } catch (error) {
-                        console.error('Error submitting form:', error);
-                    } finally {
-                        // Log the action
-                        fetch('{{ route("log.action") }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            },
-                            body: JSON.stringify({
-                                action: 'form_submit_attempt',
-                                user_id: '{{ Auth::id() }}',
-                                form_action: form.action
-                            })
-                        });
-                    }
-                });
-            });
-        });
-    </script>
-    @endpush
 
 @endsection

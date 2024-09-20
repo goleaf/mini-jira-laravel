@@ -22,7 +22,7 @@ class TaskStatusController extends Controller
 
     public function create()
     {
-        return view('task_statuses.create');
+        return view('task_statuses.form');
     }
 
     public function store(Request $request)
@@ -55,7 +55,7 @@ class TaskStatusController extends Controller
 
     public function edit(TaskStatus $taskStatus)
     {
-        return view('task_statuses.edit', compact('taskStatus'));
+        return view('task_statuses.form', compact('taskStatus'));
     }
 
     public function update(Request $request, TaskStatus $taskStatus)
@@ -80,13 +80,18 @@ class TaskStatusController extends Controller
 
         return redirect()->route('task-statuses.index')->with('success', __('status_updated_success'));
     }
-
     public function destroy(TaskStatus $taskStatus)
     {
+        if ($taskStatus->tasks()->exists()) {
+            return redirect()->route('task-statuses.index')
+                ->with('error', __('cannot_delete_task_status_with_tasks'))
+                ->withErrors(['delete' => __('task_status_has_associated_tasks')]);
+        }
+
         $taskStatus->delete();
 
         LogService::logAction(__('action_deleted'), $taskStatus->id, 'task_status');
 
-        return redirect()->route('task-statuses.index')->with('success', __('status_deleted'));
+        return redirect()->route('task-statuses.index')->with('success', __('task_status_deleted'));
     }
 }
