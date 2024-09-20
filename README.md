@@ -241,14 +241,3 @@ This rich demo environment allows for an immediate and thorough exploration of t
 ## Contribution Guidelines
 
 We enthusiastically welcome contributions to enhance Mini Jira Laravel. For substantial changes or new feature proposals, please initiate by opening an issue to discuss your ideas and ensure alignment with the project's goals.
-
-### 12. User Interface Components `(Implemented)`
-- **Task List View**: `(Done)`
-  - Comprehensive table display with sortable columns
-  - Quick access to task details and actions
-- **Task Detail View**: `(Done)`
-  - Detailed task information display
-  - Integrated comment system within task view
-- **Comment System UI**: `(Done)`
-  - Threaded comment display for clear conversation flow
-  - Inline editing and deletion of comments
