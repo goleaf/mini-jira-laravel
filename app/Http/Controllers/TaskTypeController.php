@@ -3,11 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\TaskType;
-use App\Services\LogService;
 use Illuminate\Http\Request;
 
 class TaskTypeController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
     public function index()
     {
         $taskTypes = TaskType::orderBy('name')->get();
@@ -21,10 +25,13 @@ class TaskTypeController extends Controller
 
     public function store(Request $request)
     {
-        $taskType = TaskType::create($request->validate([
-            'name' => 'required|string|max:255',
-        ]));
-        LogService::logAction(__('action_created'), $taskType->id, 'task_type');
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:task_types',
+        ]);
+
+        $taskType = TaskType::create($validated);
+        
+        LogsController::log(__('action_created'), $taskType->id, 'task_type');
 
         return redirect()->route('task-types.index')->with('success', __('task_type_created'));
     }
@@ -36,10 +43,13 @@ class TaskTypeController extends Controller
 
     public function update(Request $request, TaskType $taskType)
     {
-        $taskType->update($request->validate([
-            'name' => 'required|string|max:255',
-        ]));
-        LogService::logAction(__('action_updated'), $taskType->id, 'task_type');
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:task_types,name,' . $taskType->id,
+        ]);
+
+        $taskType->update($validated);
+        
+        LogsController::log(__('action_updated'), $taskType->id, 'task_type');
 
         return redirect()->route('task-types.index')->with('success', __('task_type_updated'));
     }
@@ -52,9 +62,11 @@ class TaskTypeController extends Controller
                 ->withErrors(['delete' => __('task_type_has_associated_tasks')]);
         }
 
+        $taskTypeName = $taskType->name; // Store the name before deletion
+        $taskTypeId = $taskType->id;
         $taskType->delete();
 
-        LogService::logAction(__('action_deleted'), $taskType->id, 'task_type');
+        LogsController::log(__('action_deleted') . ': ' . $taskTypeName, $taskTypeId, 'task_type');
 
         return redirect()->route('task-types.index')->with('success', __('task_type_deleted'));
     }

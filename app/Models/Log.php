@@ -4,37 +4,25 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Log extends Model
 {
     use HasFactory;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'user_id',
+        'action',
+        'loggable_id',
+        'loggable_type',
+    ];
 
-    public function getUser(): BelongsTo
+    public function loggable()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->morphTo();
     }
 
-    public function task(): BelongsTo
+    public function user()
     {
-        return $this->belongsTo(Task::class, 'object_id')->withTrashed();
+        return $this->belongsTo(User::class);
     }
-
-    public function taskStatus(): BelongsTo
-    {
-        return $this->belongsTo(TaskStatus::class, 'object_id')->withTrashed();
-    }
-
-    public function taskType(): BelongsTo
-    {
-        return $this->belongsTo(TaskType::class, 'object_id')->withTrashed();
-    }
-
-    public function taskByComment(): BelongsTo
-    {
-        return $this->belongsTo(Task::class, 'object_id')->withTrashed();
-    }
-
 }

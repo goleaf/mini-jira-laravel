@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Types API Test</title>
+</head>
+<body>
+    <h1>Task Types API Test</h1>
+    <button id="listTypes">List Task Types</button>
+    <form id="createTypeForm">
+        <input type="text" id="name" placeholder="Type Name" required>
+        <button type="submit">Create Task Type</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        const apiUrl = '/api/task-types';
+        const token = localStorage.getItem('api_token');
+
+        document.getElementById('listTypes').addEventListener('click', async () => {
+            try {
+                const response = await fetch(apiUrl, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('result').textContent = error.message;
+            }
+        });
+
+        document.getElementById('createTypeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const type = {
+                name: document.getElementById('name').value
+            };
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(type)
+                });
+                const data = await response.json();
+                document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('result').textContent = error.message;
+            }
+        });
+    </script>
+</body>
+</html>

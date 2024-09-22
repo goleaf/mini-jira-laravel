@@ -6,23 +6,23 @@ use App\Models\Task;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Collection;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Carbon\Carbon;
+use App\Models\TaskStatus;
+use App\Models\TaskType;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    use AuthorizesRequests;
-
     public function __construct()
     {
         $this->middleware('auth');
     }
 
-    public function userDashboard(User $user)
+    public function userDashboard(User $user, Request $request)
     {
-        $createdTasks = $this->getCreatedTasksSorted($user);
-        $assignedTasks = $this->getAssignedTasksSorted($user);
-        $lastUpdatedTasks = $this->getLastUpdatedTasksSorted($user);
+        $createdTasks = $this->getCreatedTasksSorted($user, $request);
+        $assignedTasks = $this->getAssignedTasksSorted($user, $request);
+        $lastUpdatedTasks = $this->getLastUpdatedTasksSorted($user, $request);
 
         $dashboardData = new Collection([
             'user' => $user,
@@ -33,34 +33,63 @@ class DashboardController extends Controller
             'assignedTasksCount' => $assignedTasks->sum(fn($tasks) => $tasks->count()),
         ]);
 
+        // Add filter data
+        $dashboardData['taskStatuses'] = TaskStatus::all();
+        $dashboardData['taskTypes'] = TaskType::all();
+        $dashboardData['taskCreators'] = User::has('tasksCreated')->get();
+        $dashboardData['assignedUsers'] = User::has('tasksAssigned')->get();
+        $dashboardData['assignedTesters'] = User::has('tasksAssignedAsTester')->get();
+
         return view('dashboard.index', compact('dashboardData'));
     }
 
-    private function getCreatedTasksSorted(User $user)
+    private function getCreatedTasksSorted(User $user, Request $request)
     {
-        return $this->getTasksSorted('task_creator_user_id', $user->id);
+        return $this->getTasksSorted('task_creator_user_id', $user->id, $request);
     }
 
-    private function getAssignedTasksSorted(User $user)
+    private function getAssignedTasksSorted(User $user, Request $request)
     {
-        return $this->getTasksSorted('assigned_user_id', $user->id);
+        return $this->getTasksSorted('assigned_user_id', $user->id, $request);
     }
 
-    private function getLastUpdatedTasksSorted(User $user)
+    private function getLastUpdatedTasksSorted(User $user, Request $request)
     {
-        return $this->getTasksSorted('id', $user->id)
+        return $this->getTasksSorted('id', $user->id, $request)
             ->map(function ($tasks) {
                 return $tasks->sortByDesc('updated_at');
             });
     }
-    private function getTasksSorted($column, $userId)
+
+    private function getTasksSorted($column, $userId, Request $request)
     {
         $now = Carbon::now()->startOfDay();
 
-        $tasks = Task::where($column, $userId)
+        $query = Task::where($column, $userId)
             ->where('task_deadline_date', '>=', $now)
-            ->with(['taskType', 'taskStatus', 'taskCreator', 'assignedUser', 'assignedTester'])
-            ->get();
+            ->with(['taskType', 'taskStatus', 'taskCreator', 'assignedUser', 'assignedTester']);
+
+        // Apply filters
+        if ($request->filled('task_status_id')) {
+            $query->where('task_status_id', $request->task_status_id);
+        }
+        if ($request->filled('task_type_id')) {
+            $query->where('task_type_id', $request->task_type_id);
+        }
+        if ($request->filled('search')) {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
+        if ($request->filled('task_creator_user_id')) {
+            $query->where('task_creator_user_id', $request->task_creator_user_id);
+        }
+        if ($request->filled('assigned_user_id')) {
+            $query->where('assigned_user_id', $request->assigned_user_id);
+        }
+        if ($request->filled('assigned_tester_user_id')) {
+            $query->where('assigned_tester_user_id', $request->assigned_tester_user_id);
+        }
+
+        $tasks = $query->get();
 
         $groupedTasks = $tasks->groupBy(function ($task) {
             return Carbon::parse($task->task_deadline_date)->format('Y-m');

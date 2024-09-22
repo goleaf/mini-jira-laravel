@@ -3,15 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Services\LogService;
 use Illuminate\Http\Request;
 use App\Models\TaskStatus;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\LogsController;
 
 class TaskStatusController extends Controller
 {
     protected $user;
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
 
     public function index()
     {
@@ -27,23 +32,13 @@ class TaskStatusController extends Controller
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-        ], [
-            'name.required' => __('validation.required', ['attribute' => __('status')]),
-            'name.string' => __('validation.string', ['attribute' => __('status')]),
-            'name.max' => __('validation.max.string', ['attribute' => __('status'), 'max' => 255]),
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:task_statuses',
         ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
+        $taskStatus = TaskStatus::create($validated);
 
-        $task_status = TaskStatus::create([
-            'name' => $request->name,
-        ]);
-
-        LogService::logAction(__('action_created'), $task_status->id, 'task_status');
+        LogsController::log(__('task_status_created') . ': ' . $taskStatus->name, $taskStatus->id, 'task_status');
 
         return redirect()->route('task-statuses.index')->with('success', __('status_created_success'));
     }
@@ -60,26 +55,18 @@ class TaskStatusController extends Controller
 
     public function update(Request $request, TaskStatus $taskStatus)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-        ], [
-            'name.required' => __('validation.required', ['attribute' => __('status')]),
-            'name.string' => __('validation.string', ['attribute' => __('status')]),
-            'name.max' => __('validation.max.string', ['attribute' => __('status'), 'max' => 255]),
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:task_statuses,name,' . $taskStatus->id,
         ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
+        $oldName = $taskStatus->name;
+        $taskStatus->update($validated);
 
-        $taskStatus->update([
-            'name' => $request->name,
-        ]);
-
-        LogService::logAction(__('action_updated'), $taskStatus->id, 'task_status');
+        LogsController::log(__('task_status_updated') . ': ' . $oldName . ' -> ' . $taskStatus->name, $taskStatus->id, 'task_status');
 
         return redirect()->route('task-statuses.index')->with('success', __('status_updated_success'));
     }
+
     public function destroy(TaskStatus $taskStatus)
     {
         if ($taskStatus->tasks()->exists()) {
@@ -88,9 +75,11 @@ class TaskStatusController extends Controller
                 ->withErrors(['delete' => __('task_status_has_associated_tasks')]);
         }
 
+        $taskStatusName = $taskStatus->name;
+        $taskStatusId = $taskStatus->id;
         $taskStatus->delete();
 
-        LogService::logAction(__('action_deleted'), $taskStatus->id, 'task_status');
+        LogsController::log(__('task_status_deleted') . ': ' . $taskStatusName, $taskStatusId, 'task_status');
 
         return redirect()->route('task-statuses.index')->with('success', __('task_status_deleted'));
     }

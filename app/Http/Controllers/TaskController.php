@@ -6,64 +6,68 @@ use App\Models\Task;
 use App\Models\TaskStatus;
 use App\Models\TaskType;
 use App\Models\User;
-use App\Services\LogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 
 class TaskController extends Controller
 {
-    public $taskCreators;
-    public $assignedUsers;
-    public $assignedTesters;
-    public $taskStatuses;
-    public $taskTypes;
+    protected $taskCreators;
+    protected $assignedUsers;
+    protected $assignedTesters;
+    protected $taskStatuses;
+    protected $taskTypes;
+    protected $users;
 
-    public $users;
-    public function __construct(Task $task, User $user, TaskStatus $taskStatus, TaskType $taskType)
+    public function __construct(User $user, TaskStatus $taskStatus, TaskType $taskType)
     {
         $this->middleware('auth');
-        $this->taskCreators = $user->all();
-        $this->assignedUsers = $user->all();
-        $this->assignedTesters = $user->all();
+        $this->users = $user->all();
         $this->taskStatuses = $taskStatus->all();
         $this->taskTypes = $taskType->all();
-        $this->users = $user->all();
+        $this->taskCreators = $user->has('tasksCreated')->get();
+        $this->assignedUsers = $user->has('tasksAssigned')->get();
+        $this->assignedTesters = $user->has('tasksAssignedAsTester')->get();
     }
 
     public function index(Request $request)
     {
-        $cacheKey = 'tasks_index_' . md5(json_encode($request->all()));
-        $tasks = Cache::get($cacheKey);
-
-        if (!$tasks) {
-            $query = $this->buildTaskQuery($request);
-            
-            // Filter tasks created by the logged-in user
-            $query->where('task_creator_user_id', Auth::id());
-            
-            $paginationCount = $this->getPaginationCount($request);
-            $tasks = $query->paginate($paginationCount);
-            $this->calculateTaskDifference($tasks);
-
-            Cache::put($cacheKey, $tasks, 24 * 60 * 60);
-        }
+        $query = $this->buildTaskQuery($request);
+        $paginationCount = $this->getPaginationCount($request);
+        $tasks = $query->paginate($paginationCount);
+        $this->calculateTaskDifference($tasks);
 
         return view('task.index', array_merge(
             $this->getViewData($tasks),
-            ['currentPaginationCount' => $this->getPaginationCount($request)]
+            ['currentPaginationCount' => $paginationCount]
         ));
     }
 
     private function buildTaskQuery(Request $request)
     {
-        $query = Task::with(['taskCreator', 'assignedUser', 'assignedTester', 'taskType', 'taskStatus'])
-                     ->withCount('comments');
+        $query = Task::query()
+            ->with(['taskCreator', 'assignedUser', 'assignedTester', 'taskType', 'taskStatus'])
+            ->withCount('comments')
+            ->where('task_creator_user_id', Auth::id());
 
-        $filters = $this->getFilters();
+        $this->applyFilters($query, $request);
+
+        return $query;
+    }
+
+    private function applyFilters($query, Request $request)
+    {
+        $filters = [
+            'created_at' => 'whereDate',
+            'task_deadline_date' => 'whereDate',
+            'search' => ['where', 'title', 'like', '%{value}%'],
+            'task_creator_user_id' => 'where',
+            'assigned_user_id' => 'where',
+            'assigned_tester_user_id' => 'where',
+            'task_status_id' => 'where',
+            'task_type_id' => 'where',
+        ];
 
         foreach ($filters as $param => $method) {
             if ($request->filled($param)) {
@@ -78,65 +82,38 @@ class TaskController extends Controller
         if ($request->filled('task_deadline_date_from') && $request->filled('task_deadline_date_to')) {
             $query->whereBetween('task_deadline_date', [$request->task_deadline_date_from, $request->task_deadline_date_to]);
         }
-
-        return $query;
-    }
-
-    private function calculateTaskDifference($tasks)
-    {
-        foreach ($tasks as $task) {
-            $task->differenceInDays = $this->calculateDaysDifference($task->task_deadline_date);
-        }
     }
 
     public function create()
     {
-        $viewData = Cache::remember('task_create_view', 24 * 60 * 60, function () {
-            return $this->getCreateEditViewData();
-        });
+        $viewData = $this->getCreateEditViewData();
         return view('task.create', $viewData);
     }
 
     public function store(Request $request)
     {
-        $validator = $this->validateTask($request);
+        $validatedData = $request->validate($this->getValidationRules(), $this->getValidationMessages());
 
-        if ($validator->fails()) {
-            return $this->redirectBackWithErrors($validator);
-        }
-
-        $validatedData = $this->getValidatedDataWithCreator($validator);
+        $validatedData['task_creator_user_id'] = Auth::id();
 
         $task = Task::create($validatedData);
-        $this->logAction(__('action_created'), $task->id);
+        LogsController::log(__('action_created'), $task->id, 'task');
         return $this->redirectToIndex(__('task_created_success'));
     }
     
     public function show(Task $task)
     {
-        $cacheKey = "task_show_{$task->id}";
-        $viewData = Cache::get($cacheKey);
-
-        if (!$viewData) {
-            $comments = $task->comments()->whereNull('parent_id')->with('user', 'replies')->get();
-            $differenceInDays = $this->calculateDaysDifference($task->task_deadline_date);
-            $viewData = compact('task', 'comments', 'differenceInDays');
-            Cache::put($cacheKey, $viewData, 24 * 60 * 60);
-        }
+        $comments = $task->comments()->whereNull('parent_id')->with('user', 'replies')->get();
+        $differenceInDays = $this->calculateDaysDifference($task->task_deadline_date);
+        $viewData = compact('task', 'comments', 'differenceInDays');
 
         return view('task.show', $viewData);
     }
 
     public function edit(Task $task)
     {
-        $cacheKey = "task_edit_{$task->id}";
-        $viewData = Cache::get($cacheKey);
-
-        if (!$viewData) {
-            $task->load(['taskCreator', 'assignedUser', 'assignedTester', 'taskType', 'taskStatus']);
-            $viewData = $this->getCreateEditViewData($task);
-            Cache::put($cacheKey, $viewData, 24 * 60 * 60);
-        }
+        $task->load(['taskCreator', 'assignedUser', 'assignedTester', 'taskType', 'taskStatus']);
+        $viewData = $this->getCreateEditViewData($task);
 
         return view('task.edit', $viewData);
     }
@@ -152,14 +129,15 @@ class TaskController extends Controller
         $validatedData = $validator->validated();
 
         $task->update($validatedData);
-        $this->logAction(__('action_updated'), $task->id);
+        LogsController::log(__('action_updated'), $task->id, 'task');
         return $this->redirectToIndex(__('task_updated_success'));
     }
 
     public function destroy(Task $task)
     {
+        $taskTitle = $task->title; // Store the title before deletion
         $task->delete();
-        $this->logAction(__('action_deleted'), $task->id);
+        LogsController::log(__('action_deleted') . ': ' . $taskTitle, $task->id, 'task');
         return $this->redirectToIndex(__('task_deleted_success'));
     }
 
@@ -228,6 +206,13 @@ class TaskController extends Controller
         ];
     }
 
+    private function calculateTaskDifference($tasks)
+    {
+        foreach ($tasks as $task) {
+            $task->differenceInDays = $this->calculateDaysDifference($task->task_deadline_date);
+        }
+    }
+
     private function calculateDaysDifference($date)
     {
         $deadlineDate = Carbon::parse($date);
@@ -247,11 +232,6 @@ class TaskController extends Controller
         $validatedData = $validator->validated();
         $validatedData['task_creator_user_id'] = Auth::id();
         return $validatedData;
-    }
-
-    private function logAction($action, $taskId)
-    {
-        LogService::logAction($action, $taskId, 'task');
     }
 
     private function redirectToIndex($message)

@@ -1,4 +1,3 @@
-
 <tr>
     <form method="GET" action="{{ route('tasks.index') }}">
         <td>
@@ -53,7 +52,7 @@
                 <option value="">{{ __('select') }}</option>
                 @foreach($taskCreators as $taskCreator)
                     <option value="{{ $taskCreator->id }}" {{ request('task_creator_user_id') == $taskCreator->id ? 'selected' : '' }}>
-                        {{ $taskCreator->name }} ({{ $taskCreator->noOfTaskCreated() }})
+                        {{ $taskCreator->name }} ({{ $taskCreator->tasksCreated()->count() }})
                     </option>
                 @endforeach
             </select>
@@ -63,7 +62,7 @@
                 <option value="">{{ __('select') }}</option>
                 @foreach($assignedUsers as $assignedUser)
                     <option value="{{ $assignedUser->id }}" {{ request('assigned_user_id') == $assignedUser->id ? 'selected' : '' }}>
-                        {{ $assignedUser->name }} ({{ $assignedUser->noOfTaskAssigned() }})
+                        {{ $assignedUser->name }} ({{ $assignedUser->tasksAssigned()->count() }})
                     </option>
                 @endforeach
             </select>
@@ -73,7 +72,7 @@
                 <option value="">{{ __('select') }}</option>
                 @foreach($assignedTesters as $assignedTester)
                     <option value="{{ $assignedTester->id }}" {{ request('assigned_tester_user_id') == $assignedTester->id ? 'selected' : '' }}>
-                        {{ $assignedTester->name }} ({{ $assignedTester->tasksAssignedCount() }})
+                        {{ $assignedTester->name }} ({{ $assignedTester->tasksAssigned()->count() }})
                     </option>
                 @endforeach
             </select>
@@ -81,21 +80,25 @@
         <td>
             <select class="form-select form-select-sm" id="task_status_id" name="task_status_id">
                 <option value="">{{ __('select') }}</option>
-                @foreach($taskStatuses as $taskStatus)
-                    <option value="{{ $taskStatus->id }}" {{ request('task_status_id') == $taskStatus->id ? 'selected' : '' }}>
-                        {{ $taskStatus->name }} ({{ $taskStatus->tasks()->count() }})
-                    </option>
-                @endforeach
+                @if(is_array($taskStatuses) || is_object($taskStatuses))
+                    @foreach($taskStatuses as $taskStatus)
+                        <option value="{{ $taskStatus->id }}" {{ request('task_status_id') == $taskStatus->id ? 'selected' : '' }}>
+                            {{ $taskStatus->name }} ({{ $taskStatus->tasks()->count() }})
+                        </option>
+                    @endforeach
+                @endif
             </select>
         </td>
         <td>
             <select class="form-select form-select-sm" id="task_type_id" name="task_type_id">
                 <option value="">{{ __('select') }}</option>
-                @foreach($taskTypes as $taskType)
-                    <option value="{{ $taskType->id }}" {{ request('task_type_id') == $taskType->id ? 'selected' : '' }}>
-                        {{ $taskType->name }} ({{ $taskType->tasks()->count() }})
-                    </option>
-                @endforeach
+                @if(is_array($taskTypes) || is_object($taskTypes))
+                    @foreach($taskTypes as $taskType)
+                        <option value="{{ $taskType->id }}" {{ request('task_type_id') == $taskType->id ? 'selected' : '' }}>
+                            {{ $taskType->name }} ({{ $taskType->tasks()->count() }})
+                        </option>
+                    @endforeach
+                @endif
             </select>
         </td>
         <td>

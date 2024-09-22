@@ -1,41 +1,41 @@
 <?php
 
-    use App\Http\Controllers\Api\CommentApiController;
-    use App\Http\Controllers\Api\TaskStatusApiController;
-    use App\Http\Controllers\Api\TaskTypeApiController;
-    use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\TaskApiController;
+use App\Http\Controllers\Api\ApiController;
 
-// API version 1
 Route::prefix('v1')->group(function () {
+    // public routes
+    Route::post('/login', [ApiController::class, 'login']);
 
-    Route::post('/login', [AuthController::class, 'login'])->name('api.login');
+    // protected routes
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', [ApiController::class, 'logout']);
 
-    Route::prefix('tasks')->group(function () {
-        Route::get('/', [TaskApiController::class, 'index'])->name('tasks.index');
-        Route::get('/{task}', [TaskApiController::class, 'show'])->name('tasks.show');
-        Route::post('/', [TaskApiController::class, 'store'])->name('tasks.store');
-        Route::put('/{task}', [TaskApiController::class, 'update'])->name('tasks.update');
-        Route::delete('/{task}', [TaskApiController::class, 'destroy'])->name('tasks.destroy');
-        // comments
-        Route::get('/{task}/comments', [CommentApiController::class, 'show'])->name('comments.show');
-        Route::post('/{task}/comments', [CommentApiController::class, 'store'])->name('comments.store');
+        // task routes
+        Route::get('/tasks', [ApiController::class, 'indexTasks']);
+        Route::post('/tasks', [ApiController::class, 'storeTask']);
+        Route::get('/tasks/{task}', [ApiController::class, 'showTask']);
+        Route::put('/tasks/{task}', [ApiController::class, 'updateTask']);
+        Route::delete('/tasks/{task}', [ApiController::class, 'destroyTask']);
+
+        // comment routes
+        Route::get('/tasks/{task}/comments', [ApiController::class, 'showComments']);
+        Route::post('/tasks/{task}/comments', [ApiController::class, 'storeComment']);
+        Route::put('/comments/{comment}', [ApiController::class, 'updateComment']);
+        Route::delete('/comments/{comment}', [ApiController::class, 'destroyComment']);
+
+        // task status routes
+        Route::get('/task-statuses', [ApiController::class, 'indexTaskStatuses']);
+        Route::post('/task-statuses', [ApiController::class, 'storeTaskStatus']);
+        Route::get('/task-statuses/{taskStatus}', [ApiController::class, 'showTaskStatus']);
+        Route::put('/task-statuses/{taskStatus}', [ApiController::class, 'updateTaskStatus']);
+        Route::delete('/task-statuses/{taskStatus}', [ApiController::class, 'destroyTaskStatus']);
+
+        // task type routes
+        Route::get('/task-types', [ApiController::class, 'indexTaskTypes']);
+        Route::post('/task-types', [ApiController::class, 'storeTaskType']);
+        Route::get('/task-types/{taskType}', [ApiController::class, 'showTaskType']);
+        Route::put('/task-types/{taskType}', [ApiController::class, 'updateTaskType']);
+        Route::delete('/task-types/{taskType}', [ApiController::class, 'destroyTaskType']);
     });
-
-    Route::prefix('task-statuses')->group(function () {
-        Route::get('/', [TaskStatusApiController::class, 'index']);
-        Route::post('/', [TaskStatusApiController::class, 'store']);
-        Route::put('/{taskStatus}', [TaskStatusApiController::class, 'update']);
-        Route::delete('/{taskStatus}', [TaskStatusApiController::class, 'destroy']);
-    });
-
-    Route::prefix('task-types')->group(function () {
-        Route::get('/', [TaskTypeApiController::class, 'index']);
-        Route::post('/', [TaskTypeApiController::class, 'store']);
-        Route::put('/{taskType}', [TaskTypeApiController::class, 'update']);
-        Route::delete('/{taskType}', [TaskTypeApiController::class, 'destroy']);
-    });
-
 });

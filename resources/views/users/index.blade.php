@@ -9,7 +9,7 @@
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1 class="mb-0">{{ __('users') }}</h1>
+        <h1 class="mb-0"><i class="fas fa-users me-2"></i>{{ __('users') }}</h1>
         <a href="{{ route('users.create') }}" class="btn btn-outline-primary">
             <i class="fas fa-user-plus me-2"></i>{{ __('create_new_user') }}
         </a>
@@ -57,7 +57,11 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="text-center"><i class="fas fa-exclamation-circle me-2"></i>{{ __('no_users_found') }}</td>
+                        <td colspan="6">
+                            <div class="alert alert-info" role="alert">
+                                <i class="fas fa-exclamation-circle me-2"></i>{{ __('no_users_found') }}
+                            </div>
+                        </td>
                     </tr>
                 @endforelse
             </tbody>

@@ -10,7 +10,7 @@
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1 class="mb-0">{{ __('user_groups') }}</h1>
+        <h1 class="mb-0"><i class="fas fa-users-cog me-2"></i>{{ __('user_groups') }}</h1>
         <a href="{{ route('users-groups.create') }}" class="btn btn-outline-primary">
             <i class="fas fa-plus-circle me-2"></i>{{ __('create') }} {{ __('user_group') }}
         </a>
@@ -49,7 +49,11 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="text-center"><i class="fas fa-exclamation-circle me-2"></i>{{ __('no_user_groups_found') }}</td>
+                        <td colspan="4">
+                            <div class="alert alert-info" role="alert">
+                                <i class="fas fa-exclamation-circle me-2"></i>{{ __('no_user_groups_found') }}
+                            </div>
+                        </td>
                     </tr>
                 @endforelse
             </tbody>

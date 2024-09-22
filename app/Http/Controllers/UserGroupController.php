@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use App\Http\Controllers\LogsController;
 
 class UserGroupController extends Controller
 {
@@ -39,6 +40,8 @@ class UserGroupController extends Controller
         DB::transaction(function () use ($request) {
             $userGroup = UserGroup::create($request->only(['name', 'description']));
             $userGroup->users()->attach($request->input('users', []));
+            
+            LogsController::log(__('user_group_created'), $userGroup->id, 'user_group');
         });
 
         return redirect()->route('users-groups.index')
@@ -75,6 +78,8 @@ class UserGroupController extends Controller
         DB::transaction(function () use ($request, $userGroup) {
             $userGroup->update($request->only(['name', 'description']));
             $userGroup->users()->sync($request->input('users', []));
+            
+            LogsController::log(__('user_group_updated'), $userGroup->id, 'user_group');
         });
 
         return redirect()->route('users-groups.index')
@@ -88,7 +93,10 @@ class UserGroupController extends Controller
                 ->with('error', __('cannot_delete_user_group_with_users'));
         }
 
+        $userGroupId = $userGroup->id;
         $userGroup->delete();
+        
+        LogsController::log(__('user_group_deleted'), $userGroupId, 'user_group');
 
         return redirect()->route('users-groups.index')
             ->with('success', __('user_group_deleted_successfully'));

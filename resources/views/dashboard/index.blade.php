@@ -13,6 +13,71 @@
             </div>
         </div>
 
+        <!-- Add filters -->
+        <form method="GET" action="{{ route('user.dashboard', ['user' => $dashboardData['user']->id]) }}" class="mb-4">
+            <div class="row">
+                <div class="col-md-2">
+                    <input type="text" class="form-control form-control-sm" name="search" value="{{ request('search') }}" placeholder="{{ __('task_title') }}">
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select form-select-sm" name="task_status_id">
+                        <option value="">{{ __('select_status') }}</option>
+                        @foreach($dashboardData['taskStatuses'] as $status)
+                            <option value="{{ $status->id }}" {{ request('task_status_id') == $status->id ? 'selected' : '' }}>
+                                {{ $status->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select form-select-sm" name="task_type_id">
+                        <option value="">{{ __('select_type') }}</option>
+                        @foreach($dashboardData['taskTypes'] as $type)
+                            <option value="{{ $type->id }}" {{ request('task_type_id') == $type->id ? 'selected' : '' }}>
+                                {{ $type->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select form-select-sm" name="task_creator_user_id">
+                        <option value="">{{ __('select_creator') }}</option>
+                        @foreach($dashboardData['taskCreators'] as $creator)
+                            <option value="{{ $creator->id }}" {{ request('task_creator_user_id') == $creator->id ? 'selected' : '' }}>
+                                {{ $creator->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select form-select-sm" name="assigned_user_id">
+                        <option value="">{{ __('select_assigned') }}</option>
+                        @foreach($dashboardData['assignedUsers'] as $assigned)
+                            <option value="{{ $assigned->id }}" {{ request('assigned_user_id') == $assigned->id ? 'selected' : '' }}>
+                                {{ $assigned->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select form-select-sm" name="assigned_tester_user_id">
+                        <option value="">{{ __('select_tester') }}</option>
+                        @foreach($dashboardData['assignedTesters'] as $tester)
+                            <option value="{{ $tester->id }}" {{ request('assigned_tester_user_id') == $tester->id ? 'selected' : '' }}>
+                                {{ $tester->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-md-12">
+                    <button type="submit" class="btn btn-primary btn-sm">{{ __('filter') }}</button>
+                    <a href="{{ route('user.dashboard', ['user' => $dashboardData['user']->id]) }}" class="btn btn-secondary btn-sm">{{ __('reset') }}</a>
+                </div>
+            </div>
+        </form>
+
         <ul class="nav nav-tabs mb-3" id="taskTabs" role="tablist">
             <li class="nav-item" role="dashboard">
                 <button class="nav-link active" id="created-tab" data-bs-toggle="tab" data-bs-target="#created" type="button" role="tab" aria-controls="created" aria-selected="true">{{ __('task_created_by') }} {{ ucwords($dashboardData['user']->name) }}</button>
@@ -86,7 +151,9 @@
                             @endforeach
                         </div>
                     @else
-                        <p>{{ __('no_tasks_found') }}</p>
+                        <div class="alert alert-info" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>{{ __('no_tasks_found') }}
+                        </div>
                     @endif
                 </div>
             @endforeach

@@ -3,15 +3,14 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\LogsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Auth\ThrottlesLogins;
-use Illuminate\Support\Str;
 
 class LoginRegisterController extends Controller
 {
@@ -40,27 +39,23 @@ class LoginRegisterController extends Controller
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $validated = $request->validate([
             'name' => ['required', 'string', 'max:250', 'regex:/^[a-zA-Z0-9\s]+$/'],
             'email' => ['required', 'string', 'email', 'max:250', 'unique:users'],
             'password' => ['required', 'confirmed', Password::min(12)->mixedCase()->numbers()->symbols()],
         ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput($request->except('password', 'password_confirmation'));
-        }
-
         $user = User::create([
-            'name' => strip_tags($request->name),
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'name' => strip_tags($validated['name']),
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
         ]);
 
         event(new Registered($user));
 
         Auth::login($user);
+
+        LogsController::log(__('user_registered') . ': ' . $user->name, $user->id, 'user');
 
         return redirect()->route('tasks.index')->with('success', __('registration_successful'));
     }
@@ -77,14 +72,12 @@ class LoginRegisterController extends Controller
             return $this->sendLockoutResponse($request);
         }
 
-        if (Auth::attempt($credentials, $request->filled('remember'))) {
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
             $this->clearLoginAttempts($request);
             
-            // Generate and store a new CSRF token
-            $token = Str::random(40);
-            $request->session()->put('_token', $token);
-            
+            LogsController::log(__('user_logged_in') . ': ' . Auth::user()->name, Auth::id(), 'user');
+
             return redirect()->intended(route('tasks.index'))->with('success', __('login_successful'));
         }
 
@@ -97,10 +90,15 @@ class LoginRegisterController extends Controller
 
     public function logout(Request $request)
     {
+        $userName = Auth::user()->name;
+        $userId = Auth::id();
+
         Auth::logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        LogsController::log(__('user_logged_out') . ': ' . $userName, $userId, 'user');
 
         return redirect()->route('login')->with('success', __('logout_successful'));
     }

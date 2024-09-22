@@ -39,6 +39,11 @@ class User extends Authenticatable
         return $this->hasMany(Task::class, 'assigned_user_id');
     }
 
+    public function tasksAssignedAsTester()
+    {
+        return $this->hasMany(Task::class, 'assigned_tester_user_id');
+    }
+
     public function tasks()
     {
         return $this->tasksCreated()->union($this->tasksAssigned());

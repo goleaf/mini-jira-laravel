@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Statuses API Test</title>
+</head>
+<body>
+    <h1>Task Statuses API Test</h1>
+    <button id="listStatuses">List Task Statuses</button>
+    <form id="createStatusForm">
+        <input type="text" id="name" placeholder="Status Name" required>
+        <button type="submit">Create Task Status</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        const apiUrl = '/api/task-statuses';
+        const token = localStorage.getItem('api_token');
+
+        document.getElementById('listStatuses').addEventListener('click', async () => {
+            try {
+                const response = await fetch(apiUrl, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('result').textContent = error.message;
+            }
+        });
+
+        document.getElementById('createStatusForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const status = {
+                name: document.getElementById('name').value
+            };
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(status)
+                });
+                const data = await response.json();
+                document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('result').textContent = error.message;
+            }
+        });
+    </script>
+</body>
+</html>

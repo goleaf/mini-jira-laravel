@@ -241,3 +241,73 @@ This rich demo environment allows for an immediate and thorough exploration of t
 ## Contribution Guidelines
 
 We enthusiastically welcome contributions to enhance Mini Jira Laravel. For substantial changes or new feature proposals, please initiate by opening an issue to discuss your ideas and ensure alignment with the project's goals.
+
+## New Features
+
+- Implemented a comprehensive logging system for enhanced tracking of user actions and system events.
+- Developed a RESTful API with endpoints for tasks, comments, task statuses, and task types.
+- Enhanced error handling and validation in API responses for improved reliability.
+- Added user group management functionality with associated logging.
+- Improved task and comment management with more detailed logging for better traceability.
+
+## API Documentation
+
+This application provides a RESTful API for managing tasks, comments, task statuses, and task types. All API routes are protected and require authentication using Laravel Sanctum.
+
+### Authentication
+
+To use the API, you need to authenticate first:
+
+1. Login:
+   - URL: `POST /api/login`
+   - Body: `{ "email": "user@example.com", "password": "your_password" }`
+   - Response: `{ "token": "your_api_token" }`
+
+2. Use the token in the `Authorization` header for all subsequent requests:
+   - `Authorization: Bearer your_api_token`
+
+3. Logout:
+   - URL: `POST /api/logout`
+
+### Tasks
+
+- List all tasks: `GET /api/tasks`
+- Create a task: `POST /api/tasks`
+- Get a specific task: `GET /api/tasks/{id}`
+- Update a task: `PUT /api/tasks/{id}`
+- Delete a task: `DELETE /api/tasks/{id}`
+
+### Comments
+
+- List comments for a task: `GET /api/tasks/{task}/comments`
+- Create a comment: `POST /api/comments`
+- Update a comment: `PUT /api/comments/{id}`
+- Delete a comment: `DELETE /api/comments/{id}`
+
+### Task Statuses
+
+- List all task statuses: `GET /api/task-statuses`
+- Create a task status: `POST /api/task-statuses`
+- Get a specific task status: `GET /api/task-statuses/{id}`
+- Update a task status: `PUT /api/task-statuses/{id}`
+- Delete a task status: `DELETE /api/task-statuses/{id}`
+
+### Task Types
+
+- List all task types: `GET /api/task-types`
+- Create a task type: `POST /api/task-types`
+- Get a specific task type: `GET /api/task-types/{id}`
+- Update a task type: `PUT /api/task-types/{id}`
+- Delete a task type: `DELETE /api/task-types/{id}`
+
+### Request and Response Formats
+
+All requests should be sent with the `Content-Type: application/json` header. Responses will be in JSON format.
+
+For detailed information about required fields and response structures, please refer to the respective controller files in the `app/Http/Controllers/Api` directory.
+
+### Error Handling
+
+The API uses standard HTTP status codes to indicate the success or failure of requests. In case of errors, a JSON response will be returned with an `error` key containing a description of the error.
+
+Example error response:

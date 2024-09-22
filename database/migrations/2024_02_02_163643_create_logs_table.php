@@ -9,18 +9,18 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
         Schema::create('logs', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('action', 50)->index();
-            $table->unsignedBigInteger('object_id')->index();
-            $table->string('type', 50)->index();
-            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete()->index();
+            $table->unsignedBigInteger('user_id');
+            $table->string('action');
+            $table->unsignedBigInteger('loggable_id');
+            $table->string('loggable_type');
             $table->timestamps();
 
-            $table->index(['action', 'object_id', 'type']);
-            $table->index(['created_at', 'action']);
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->index(['loggable_id', 'loggable_type']);
         });
     }
 
