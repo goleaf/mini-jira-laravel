@@ -130,6 +130,5 @@
     "task_creator": "Task creator",
     "assigned_tester": "Assigned tester",
     "created_at": "Created at",
-    "last_updated_tasks": "Last updated tasks",
-    "updated_at": "Updated at"
+    "last_updated_tasks": "Last updated tasks"
 }

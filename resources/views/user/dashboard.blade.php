@@ -38,11 +38,11 @@
                                             <th scope="col" class="text-nowrap col-1"><i class="fas fa-calendar-plus me-2"></i>{{ __('date_created') }}</th>
                                             <th scope="col" class="text-nowrap col-1"><i class="fas fa-calendar-alt me-2"></i>{{ __('task_deadline') }}</th>
                                             <th scope="col" class="text-nowrap col-4"><i class="fas fa-heading me-2"></i>{{ __('task_title') }}</th>
-                                            <th scope="col" class="text-nowrap col-1"><i class="fas fa-user-plus me-2"></i>{{ __('Created by') }}</th>
-                                            <th scope="col" class="text-nowrap col-1"><i class="fas fa-user-check me-2"></i>{{ __('Assigned to') }}</th>
-                                            <th scope="col" class="text-nowrap col-1"><i class="fas fa-user-shield me-2"></i>{{ __('Assigned to QA') }}</th>
-                                            <th scope="col" class="text-nowrap col-1"><i class="fas fa-info-circle me-2"></i>{{ __('Status') }}</th>
-                                            <th scope="col" class="text-nowrap col-1"><i class="fas fa-tasks me-2"></i>{{ __('Type') }}</th>
+                                            <th scope="col" class="text-nowrap col-1"><i class="fas fa-user-plus me-2"></i>{{ __('task_creator') }}</th>
+                                            <th scope="col" class="text-nowrap col-1"><i class="fas fa-user-check me-2"></i>{{ __('task_assigned_to') }}</th>
+                                            <th scope="col" class="text-nowrap col-1"><i class="fas fa-user-shield me-2"></i>{{ __('task_assigned_to_qa') }}</th>
+                                            <th scope="col" class="text-nowrap col-1"><i class="fas fa-info-circle me-2"></i>{{ __('status') }}</th>
+                                            <th scope="col" class="text-nowrap col-1"><i class="fas fa-tasks me-2"></i>{{ __('task_type') }}</th>
                                             <th scope="col" class="text-nowrap col-1"><i class="fas fa-cogs me-2"></i>{{ __('actions') }}</th>
                                         </tr>
                                     </thead>
