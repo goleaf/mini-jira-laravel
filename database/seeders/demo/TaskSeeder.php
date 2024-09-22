@@ -24,7 +24,7 @@ class TaskSeeder extends Seeder
         $taskStatuses = TaskStatus::all()->pluck('id')->toArray();
         $faker = Faker::create();
 
-        for ($i = 0; $i < 2000; $i++) {
+        for ($i = 0; $i < 10000; $i++) {
             $creatorId = $faker->randomElement($users);
             $assignedId = $faker->randomElement(array_diff($users, [$creatorId]));
             $testerId = $faker->randomElement(array_diff($users, [$creatorId, $assignedId]));

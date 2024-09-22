@@ -159,12 +159,14 @@
     "user_group_updated_successfully": "User group updated successfully",
     "user_group_deleted_successfully": "User group deleted successfully",
     "cannot_delete_user_group_with_users": "Cannot delete user group with associated users",
-    "confirm_delete_user_group": "Are you sure you want to delete this user group?",
     "user_group_details": "User group details",
     "users_in_group": "Users in group",
     "no_users_in_group": "No users in this group",
     "back_to_list": "Back to list",
     "edit_user_group": "Edit user group",
     "assigned_users": "Assigned users",
-    "all_users": "All users"
+    "all_users": "All users",
+    "show": "Show",
+    "this_month": "This month",
+    "no_user_groups_found": "No user groups found",
 }

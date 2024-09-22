@@ -20,10 +20,9 @@ class DashboardController extends Controller
 
     public function userDashboard(User $user)
     {
-
-        $createdTasks = $this->getCreatedTasksSortedByWeek($user);
-        $assignedTasks = $this->getAssignedTasksSortedByWeek($user);
-        $lastUpdatedTasks = $this->getLastUpdatedTasksSortedByWeek($user);
+        $createdTasks = $this->getCreatedTasksSorted($user);
+        $assignedTasks = $this->getAssignedTasksSorted($user);
+        $lastUpdatedTasks = $this->getLastUpdatedTasksSorted($user);
 
         $dashboardData = new Collection([
             'user' => $user,
@@ -37,42 +36,52 @@ class DashboardController extends Controller
         return view('dashboard.index', compact('dashboardData'));
     }
 
-    private function getCreatedTasksSortedByWeek(User $user)
+    private function getCreatedTasksSorted(User $user)
     {
-        return $this->getTasksSortedByWeek('task_creator_user_id', $user->id);
+        return $this->getTasksSorted('task_creator_user_id', $user->id);
     }
 
-    private function getAssignedTasksSortedByWeek(User $user)
+    private function getAssignedTasksSorted(User $user)
     {
-        return $this->getTasksSortedByWeek('assigned_user_id', $user->id);
+        return $this->getTasksSorted('assigned_user_id', $user->id);
     }
 
-    private function getLastUpdatedTasksSortedByWeek(User $user)
+    private function getLastUpdatedTasksSorted(User $user)
     {
-        return Task::where(function ($query) use ($user) {
-                $query->where('task_creator_user_id', $user->id)
-                      ->orWhere('assigned_user_id', $user->id);
-            })
-            ->with(['taskType', 'taskStatus', 'taskCreator', 'assignedUser', 'assignedTester'])
-            ->get()
-            ->groupBy(function ($task) {
-                return $task->updated_at->format('YW');
-            })
+        return $this->getTasksSorted('id', $user->id)
             ->map(function ($tasks) {
                 return $tasks->sortByDesc('updated_at');
             });
     }
-
-    private function getTasksSortedByWeek($column, $userId)
+    private function getTasksSorted($column, $userId)
     {
-        return Task::where($column, $userId)
+        $now = Carbon::now()->startOfDay();
+
+        $tasks = Task::where($column, $userId)
+            ->where('task_deadline_date', '>=', $now)
             ->with(['taskType', 'taskStatus', 'taskCreator', 'assignedUser', 'assignedTester'])
-            ->get()
-            ->groupBy(function ($task) {
-                return $task->created_at->format('YW');
-            })
-            ->map(function ($tasks) {
-                return $tasks->sortByDesc('created_at');
-            });
+            ->get();
+
+        $groupedTasks = $tasks->groupBy(function ($task) {
+            return Carbon::parse($task->task_deadline_date)->format('Y-m');
+        })->sortKeys();
+
+        $formattedTasks = $groupedTasks->map(function ($tasks, $yearMonth) {
+            $carbonDate = Carbon::createFromFormat('Y-m', $yearMonth);
+            $formattedDate = $carbonDate->format('F Y');
+            return [
+                'date' => $formattedDate,
+                'tasks' => $tasks->sortBy('task_deadline_date')
+            ];
+        });
+
+        $currentMonthKey = Carbon::now()->format('Y-m');
+        $currentMonthTasks = $formattedTasks->pull($currentMonthKey);
+
+        if ($currentMonthTasks) {
+            return collect([__('this_month') => $currentMonthTasks['tasks']])->merge($formattedTasks->pluck('tasks', 'date'));
+        }
+
+        return $formattedTasks->pluck('tasks', 'date');
     }
 }
