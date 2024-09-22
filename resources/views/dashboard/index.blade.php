@@ -64,13 +64,13 @@
                                                                 <td>{{ $task->taskStatus->name }}</td>
                                                                 <td>{{ $task->taskType->name }}</td>
                                                                 <td>
-                                                                    <a href="{{ route('tasks.edit', ['task' => $task->id]) }}" class="btn btn-primary btn-sm">
+                                                                    <a href="{{ route('tasks.edit', ['task' => $task->id]) }}" class="btn btn-sm btn-outline-primary">
                                                                         <i class="fas fa-edit"></i> {{ __('edit') }}
                                                                     </a>
                                                                     <form action="{{ route('tasks.destroy', ['task' => $task->id]) }}" method="POST" class="d-inline">
                                                                         @csrf
                                                                         @method('DELETE')
-                                                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('{{ __('confirm_delete_task') }}')">
+                                                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('{{ __('confirm_delete_task') }}')">
                                                                             <i class="fas fa-trash-alt"></i> {{ __('delete') }}
                                                                         </button>
                                                                     </form>

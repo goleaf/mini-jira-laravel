@@ -9,13 +9,13 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h2 class="mt-3">{{ $task->title }}</h2>
                     <div>
-                        <a href="{{ route('tasks.edit', ['task' => $task->id]) }}" class="btn btn-primary me-1">
+                        <a href="{{ route('tasks.edit', ['task' => $task->id]) }}" class="btn btn-outline-primary me-1">
                             <i class="fas fa-edit"></i> {{ __('edit') }}
                         </a>
                         <form method="post" action="{{ route('tasks.destroy', ['task' => $task->id]) }}" onsubmit="return confirm('{{ __('delete_task_confirmation') }}')" class="d-inline">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-danger">
+                            <button type="submit" class="btn btn-outline-danger">
                                 <i class="fas fa-trash-alt"></i> {{ __('delete') }}
                             </button>
                         </form>
@@ -85,7 +85,7 @@
                                 <textarea class="form-control auto-height" name="body" required rows="1"></textarea>
                             </div>
                             <div class="form-group">
-                                <button type="submit" class="btn btn-success">
+                                <button type="submit" class="btn btn-outline-success">
                                     <i class="fas fa-reply"></i> {{ __('reply') }}
                                 </button>
                             </div>

@@ -35,7 +35,7 @@
                             @endforeach
                         </ul>
 
-                        <a href="{{ route('task-types.create') }}" class="btn btn-primary mb-3 mt-4"><i class="fas fa-plus"></i> {{ __('create') }}</a>
+                        <a href="{{ route('task-types.create') }}" class="btn btn-outline-primary mb-3 mt-4"><i class="fas fa-plus"></i> {{ __('create') }}</a>
                     </div>
                 </div>
             </div>

@@ -10,7 +10,7 @@
             </div>
             @if($comment->canEdit(auth()->user()) || $comment->canDelete(auth()->user()))
                 <div class="dropdown">
-                    <button class="btn btn-sm btn-link text-muted p-0" type="button" id="dropdownMenuButton-{{ $comment->id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button class="btn btn-sm btn-outline-secondary text-muted p-0" type="button" id="dropdownMenuButton-{{ $comment->id }}" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fas fa-ellipsis-v"></i>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton-{{ $comment->id }}">
@@ -35,7 +35,7 @@
                 <p class="card-text mb-2" id="comment-body-{{ $comment->id }}">
                     <i class="fas fa-comment me-2"></i>{{ $comment->body }}
                 </p>
-                <button class="btn btn-sm btn-success" id="reply-button-{{ $comment->id }}" onclick="toggleReplyForm({{ $comment->id }})">{{ __('reply') }}</button>
+                <button class="btn btn-sm btn-outline-success" id="reply-button-{{ $comment->id }}" onclick="toggleReplyForm({{ $comment->id }})">{{ __('reply') }}</button>
             </div>
             <div id="edit-form-{{ $comment->id }}" style="display: none;">
                 <form action="{{ route('comments.update', $comment) }}" method="POST">
@@ -45,8 +45,8 @@
                         <textarea class="form-control auto-height" name="body" required>{{ $comment->body }}</textarea>
                     </div>
                     <div class="mt-2">
-                        <button type="submit" class="btn btn-sm btn-primary">{{ __('update') }}</button>
-                        <button type="button" class="btn btn-sm btn-secondary" onclick="toggleEditForm({{ $comment->id }})">{{ __('cancel') }}</button>
+                        <button type="submit" class="btn btn-sm btn-outline-primary">{{ __('update') }}</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleEditForm({{ $comment->id }})">{{ __('cancel') }}</button>
                     </div>
                 </form>
             </div>
@@ -59,7 +59,7 @@
             <input type="hidden" name="parent_id" value="{{ $comment->id }}">
             <div class="input-group">
                 <textarea class="form-control auto-height" name="body" required placeholder="{{ __('type_reply') }}"></textarea>
-                <button type="submit" class="btn btn-primary">{{ __('reply') }}</button>
+                <button type="submit" class="btn btn-outline-primary">{{ __('reply') }}</button>
             </div>
         </form>
     </div>

@@ -42,13 +42,13 @@
                         <td class="text-nowrap">{{ $task->taskStatus->name ?? __('deleted') }} <span class="badge bg-secondary">{{ $task->taskStatusCount ?? 0 }}</span></td>
                         <td class="text-nowrap">{{ $task->taskType->name ?? __('deleted') }} <span class="badge bg-secondary">{{ $task->taskTypeCount ?? 0 }}</span></td>
                         <td class="text-nowrap">
-                            <a href="{{ route('tasks.edit', $task->id) }}" class="btn btn-primary btn-sm">
-                                <i class="fas fa-edit"></i> Edit
+                            <a href="{{ route('tasks.edit', $task->id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i> {{ __('edit') }}
                             </a>
                             <form action="{{ route('tasks.destroy', $task->id) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('{{ __('confirm_delete_task') }}')">
+                                <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('{{ __('confirm_delete_task') }}')">
                                     <i class="fas fa-trash-alt"></i> Delete
                                 </button>
                             </form>
@@ -76,7 +76,7 @@
                                 <option value="{{ $value }}" @if($currentPaginationCount == $value) selected @endif>{{ $value }} {{ __('tasks_per_page') }}</option>
                             @endforeach
                         </select>
-                        <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-sync-alt me-2"></i>{{ __('update') }}</button>
+                        <button type="submit" class="btn btn-outline-primary btn-sm"><i class="fas fa-sync-alt me-2"></i>{{ __('update') }}</button>
                     </div>
                 </form>
             </div>

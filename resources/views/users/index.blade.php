@@ -10,7 +10,7 @@
     @endif
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1 class="mb-0">{{ __('users') }}</h1>
-        <a href="{{ route('users.create') }}" class="btn btn-primary">
+        <a href="{{ route('users.create') }}" class="btn btn-outline-primary">
             <i class="fas fa-user-plus me-2"></i>{{ __('create_new_user') }}
         </a>
     </div>
@@ -43,13 +43,13 @@
                         </td>
                         <td class="text-nowrap">{{ $user->is_admin ? __('yes') : __('no') }}</td>
                         <td class="text-nowrap">
-                            <a href="{{ route('users.edit', $user) }}" class="btn btn-primary btn-sm">
+                            <a href="{{ route('users.edit', $user) }}" class="btn btn-outline-primary btn-sm">
                                 <i class="fas fa-edit me-1"></i>{{ __('edit') }}
                             </a>
                             <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('{{ __('confirm_delete_user') }}')">
+                                <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('{{ __('confirm_delete_user') }}')">
                                     <i class="fas fa-trash-alt me-1"></i>{{ __('delete') }}
                                 </button>
                             </form>
