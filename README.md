@@ -77,7 +77,7 @@ Mini Jira Laravel is a sophisticated and feature-rich task management applicatio
 - **Agile Metrics**:
   - Burndown charts and velocity tracking for agile methodology adherence
 
-### 6. Search and Filter Capabilities:
+### 6. Search and Filter Capabilities (Implemented):
 - **Advanced Search**: `(Done)`
   - Multi-criteria search functionality for precise results
   - Saved filters for quick access to frequently used views
