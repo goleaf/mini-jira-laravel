@@ -36,9 +36,9 @@
                                 </span>
                             @endif
                         </td>
-                        <td class="text-nowrap">{{ $task->taskCreator->name }} <span class="badge bg-secondary">{{ $task->taskCreatorTasksCount }}</span></td>
-                        <td class="text-nowrap">{{ $task->assignedUser->name ?? __('not_assigned') }} <span class="badge bg-secondary">{{ $task->assignedUserTasksCount ?? 0 }}</span></td>
-                        <td class="text-nowrap">{{ $task->assignedTester->name ?? __('not_assigned') }} <span class="badge bg-secondary">{{ $task->assignedTesterTasksCount ?? 0 }}</span></td>
+                        <td class="text-nowrap">{{ $task->taskCreator->name }} <span class="badge bg-secondary">{{ $task->taskCreator->noOfTaskCreated() }}</span></td>
+                        <td class="text-nowrap">{{ $task->assignedUser->name ?? __('not_assigned') }} <span class="badge bg-secondary">{{ $task->assignedUser->noOfTaskAssigned() ?? 0 }}</span></td>
+                        <td class="text-nowrap">{{ $task->assignedTester->name ?? __('not_assigned') }} <span class="badge bg-secondary">{{ $task->assignedTester->tasksAssignedCount() ?? 0 }}</span></td>
                         <td class="text-nowrap">{{ $task->taskStatus->name ?? __('deleted') }} <span class="badge bg-secondary">{{ $task->taskStatusCount ?? 0 }}</span></td>
                         <td class="text-nowrap">{{ $task->taskType->name ?? __('deleted') }} <span class="badge bg-secondary">{{ $task->taskTypeCount ?? 0 }}</span></td>
                         <td class="text-nowrap">

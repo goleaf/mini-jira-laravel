@@ -15,7 +15,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'work_position',
         'is_admin',
+        'user_group_id',
     ];
 
     protected $hidden = [
@@ -70,5 +72,15 @@ class User extends Authenticatable
     public function getAllUserTasks()
     {
         return $this->tasksCreated->merge($this->tasksAssigned);
+    }
+
+    public function tasksAssignedCount()
+    {
+        return $this->tasksAssigned()->count();
+    }
+
+    public function userGroups()
+    {
+        return $this->belongsToMany(UserGroup::class, 'rel_users_groups_users', 'user_id', 'user_group_id');
     }
 }

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginRegisterController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LogsController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskStatusController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\TaskTypeController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserGroupController;
 
 Route::get('/', [TaskController::class, 'index'])->name('home');
 
@@ -17,7 +19,6 @@ Route::controller(LoginRegisterController::class)->group(function() {
     Route::post('/store', 'store')->name('store');
     Route::get('/login', 'login')->name('login');
     Route::post('/authenticate', 'authenticate')->name('authenticate');
-    Route::get('/dashboard', 'dashboard')->name('dashboard');
     Route::post('/logout', 'logout')->name('logout');
 });
 
@@ -40,7 +41,8 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('comments', CommentController::class)->only(['store', 'destroy']);
     Route::put('/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
 
-    Route::get('user/{user}/', [UserController::class, 'userDashboard'])->name('user.dashboard');
+    // dashboard
+    Route::get('/dashboard/{user}', [DashboardController::class, 'userDashboard'])->name('user.dashboard');
 
     // task types
     Route::get('/task-types', [TaskTypeController::class, 'index'])->name('task-types.index');
@@ -64,9 +66,23 @@ Route::middleware(['auth'])->group(function () {
 
     // logs
     Route::get('/logs', [LogsController::class, 'index'])->name('logs.index');
+ 
+    // users
+    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+    Route::post('/users', [UserController::class, 'store'])->name('users.store');
+    Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
+    Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
-    Route::resources(['task' => TaskController::class ]);
+    // user groups 
+    Route::get('/users-groups', [UserGroupController::class, 'index'])->name('users-groups.index');
+    Route::get('/users-groups/create', [UserGroupController::class, 'create'])->name('users-groups.create');
+    Route::post('/users-groups', [UserGroupController::class, 'store'])->name('users-groups.store');
+    Route::get('/users-groups/{userGroup}', [UserGroupController::class, 'show'])->name('users-groups.show');
+    Route::get('/users-groups/{userGroup}/edit', [UserGroupController::class, 'edit'])->name('users-groups.edit');
+    Route::put('/users-groups/{userGroup}', [UserGroupController::class, 'update'])->name('users-groups.update');
+    Route::delete('/users-groups/{userGroup}', [UserGroupController::class, 'destroy'])->name('users-groups.destroy');
 
 });
-
-

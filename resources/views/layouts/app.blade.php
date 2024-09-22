@@ -46,11 +46,23 @@
                             <li class="nav-item">
                                 <a class="nav-link text-primary" href="{{ route('logs.index') }}"><i class="fas fa-clipboard-list"></i> {{ __('logs') }}</a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-primary" href="{{ route('task-types.index') }}"><i class="fas fa-list-ul"></i> {{ __('task_types') }}</a>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-primary" href="#" id="taskManagementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-cogs"></i> {{ __('task_management') }}
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="taskManagementDropdown">
+                                    <li><a class="dropdown-item" href="{{ route('task-types.index') }}"><i class="fas fa-list-ul me-2"></i>{{ __('task_types') }}</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('task-statuses.index') }}"><i class="fas fa-chart-bar me-2"></i>{{ __('task_statuses') }}</a></li>
+                                </ul>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-primary" href="{{ route('task-statuses.index') }}"><i class="fas fa-chart-bar"></i> {{ __('task_statuses') }}</a>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-primary" href="#" id="userManagementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-users-cog"></i> {{ __('user_management') }}
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="userManagementDropdown">
+                                    <li><a class="dropdown-item" href="{{ route('users.index') }}"><i class="fas fa-users me-2"></i>{{ __('users') }}</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('users-groups.index') }}"><i class="fas fa-user-friends me-2"></i>{{ __('user_groups') }}</a></li>
+                                </ul>
                             </li>
                         @endif
                         <li class="nav-item">
@@ -76,7 +88,7 @@
 </div>
 
 <footer class="text-center py-3">
-    <p>Created with love <i class="fas fa-heart text-danger"></i></p>
+    <p>{{ __('created_with_love') }} <i class="fas fa-heart text-danger"></i></p>
 </footer>
 
 @stack('scripts')
