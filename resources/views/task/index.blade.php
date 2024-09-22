@@ -73,7 +73,7 @@
                     <div class="input-group input-group-sm mb-3">
                         <select name="paginationCount" id="paginationCount" class="form-select form-select-sm">
                             @foreach(range(5, 50, 5) as $value)
-                                <option value="{{ $value }}" @if(session('paginationCount') == $value) selected @endif>{{ $value }} {{ __('tasks_per_page') }}</option>
+                                <option value="{{ $value }}" @if($currentPaginationCount == $value) selected @endif>{{ $value }} {{ __('tasks_per_page') }}</option>
                             @endforeach
                         </select>
                         <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-sync-alt me-2"></i>{{ __('update') }}</button>

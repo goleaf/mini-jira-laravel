@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 
 class TaskController extends Controller
@@ -25,22 +26,36 @@ class TaskController extends Controller
     public function __construct(Task $task, User $user, TaskStatus $taskStatus, TaskType $taskType)
     {
         $this->middleware('auth');
-        $this->taskCreators = $user->withCount('tasks')->orderBy('name', 'asc')->get();
-        $this->assignedUsers = $user->withCount('tasksAssigned')->orderBy('name', 'asc')->get();
-        $this->assignedTesters = $user->withCount('tasksAssigned')->orderBy('name', 'asc')->get();
-        $this->taskStatuses = $taskStatus->withCount('tasks')->orderBy('name', 'asc')->get();
-        $this->taskTypes = $taskType->withCount('tasks')->orderBy('name', 'asc')->get();
-        $this->users = $user->withCount('tasksAssigned')->orderBy('name', 'asc')->get();
+        $this->taskCreators = $user->all();
+        $this->assignedUsers = $user->all();
+        $this->assignedTesters = $user->all();
+        $this->taskStatuses = $taskStatus->all();
+        $this->taskTypes = $taskType->all();
+        $this->users = $user->all();
     }
 
     public function index(Request $request)
     {
-        $query = $this->buildTaskQuery($request);
-        $tasks = $query->paginate($this->getPaginationCount($request));
+        $cacheKey = 'tasks_index_' . md5(json_encode($request->all()));
+        $tasks = Cache::get($cacheKey);
 
-        $this->calculateTaskDifference($tasks);
+        if (!$tasks) {
+            $query = $this->buildTaskQuery($request);
+            
+            // Filter tasks created by the logged-in user
+            $query->where('task_creator_user_id', Auth::id());
+            
+            $paginationCount = $this->getPaginationCount($request);
+            $tasks = $query->paginate($paginationCount);
+            $this->calculateTaskDifference($tasks);
 
-        return view('task.index', $this->getViewData($tasks));
+            Cache::put($cacheKey, $tasks, 24 * 60 * 60);
+        }
+
+        return view('task.index', array_merge(
+            $this->getViewData($tasks),
+            ['currentPaginationCount' => $this->getPaginationCount($request)]
+        ));
     }
 
     private function buildTaskQuery(Request $request)
@@ -76,7 +91,10 @@ class TaskController extends Controller
 
     public function create()
     {
-        return view('task.create', $this->getCreateEditViewData());
+        $viewData = Cache::remember('task_create_view', 24 * 60 * 60, function () {
+            return $this->getCreateEditViewData();
+        });
+        return view('task.create', $viewData);
     }
 
     public function store(Request $request)
@@ -96,15 +114,31 @@ class TaskController extends Controller
     
     public function show(Task $task)
     {
-        $comments = $task->comments()->whereNull('parent_id')->with('user', 'replies')->get();
-        $differenceInDays = $this->calculateDaysDifference($task->task_deadline_date);
-        return view('task.show', compact('task', 'comments', 'differenceInDays'));
+        $cacheKey = "task_show_{$task->id}";
+        $viewData = Cache::get($cacheKey);
+
+        if (!$viewData) {
+            $comments = $task->comments()->whereNull('parent_id')->with('user', 'replies')->get();
+            $differenceInDays = $this->calculateDaysDifference($task->task_deadline_date);
+            $viewData = compact('task', 'comments', 'differenceInDays');
+            Cache::put($cacheKey, $viewData, 24 * 60 * 60);
+        }
+
+        return view('task.show', $viewData);
     }
 
     public function edit(Task $task)
     {
-        $task->load(['taskCreator', 'assignedUser', 'assignedTester', 'taskType', 'taskStatus']);
-        return view('task.edit', $this->getCreateEditViewData($task));
+        $cacheKey = "task_edit_{$task->id}";
+        $viewData = Cache::get($cacheKey);
+
+        if (!$viewData) {
+            $task->load(['taskCreator', 'assignedUser', 'assignedTester', 'taskType', 'taskStatus']);
+            $viewData = $this->getCreateEditViewData($task);
+            Cache::put($cacheKey, $viewData, 24 * 60 * 60);
+        }
+
+        return view('task.edit', $viewData);
     }
 
     public function update(Request $request, Task $task)
