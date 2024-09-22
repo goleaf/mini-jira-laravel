@@ -116,5 +116,20 @@
     "action_updated": "Updated",
     "action_deleted": "Deleted",
     "task_status_has_associated_tasks": "This task status has associated tasks and cannot be deleted.",
-    "task_status_deleted": "Task status deleted successfully."
+    "task_status_deleted": "Task status deleted successfully.",
+    "last_7_days": "Last 7 days",
+    "by_weeks": "By weeks",
+    "show_all": "Show all",
+    "by_deadline": "By deadline",
+    "Week of": "Week of",
+    "description": "Description",
+    "task_description": "Task description",
+    "task_description_required": "Task description is required.",
+    "save": "Save",
+    "back": "Back",
+    "task_creator": "Task creator",
+    "assigned_tester": "Assigned tester",
+    "created_at": "Created at",
+    "last_updated_tasks": "Last updated tasks",
+    "updated_at": "Updated at"
 }
