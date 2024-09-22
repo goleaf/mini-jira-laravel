@@ -19,22 +19,26 @@ class TaskSeeder extends Seeder
      */
     public function run(): void
     {
-        $users = User::all();
-        $taskTypes = TaskType::all();
-        $taskStatuses = TaskStatus::all();
+        $users = User::all()->pluck('id')->toArray();
+        $taskTypes = TaskType::all()->pluck('id')->toArray();
+        $taskStatuses = TaskStatus::all()->pluck('id')->toArray();
         $faker = Faker::create();
 
-        for ($i = 0; $i < 500; $i++) {
+        for ($i = 0; $i < 2000; $i++) {
+            $creatorId = $faker->randomElement($users);
+            $assignedId = $faker->randomElement(array_diff($users, [$creatorId]));
+            $testerId = $faker->randomElement(array_diff($users, [$creatorId, $assignedId]));
+
             DB::table('tasks')->insert([
                 'title' => $faker->sentence($faker->numberBetween(6, 20), true),
-                'description' => $faker->paragraph(3, true),
+                'description' => $faker->paragraph(5, true),
                 'task_deadline_date' => $faker->dateTimeBetween('now', '+1 year')->format('Y-m-d'),
-                'task_creator_user_id' => $users->random()->id,
-                'assigned_user_id' => $users->random()->id,
-                'assigned_tester_user_id' => $users->random()->id,
-                'task_type_id' => $taskTypes->random()->id,
-                'task_status_id' => $taskStatuses->random()->id,
-                'created_at' => now(),
+                'task_creator_user_id' => $creatorId,
+                'assigned_user_id' => $assignedId,
+                'assigned_tester_user_id' => $testerId,
+                'task_type_id' => $faker->randomElement($taskTypes),
+                'task_status_id' => $faker->randomElement($taskStatuses),
+                'created_at' => $faker->dateTimeBetween('-1 year', 'now')->format('Y-m-d H:i:s'),
                 'updated_at' => now(),
             ]);
         }
