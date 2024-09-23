@@ -8,11 +8,10 @@ use App\Models\TaskStatus;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\LogsController;
+use Illuminate\Validation\Rule;
 
 class TaskStatusController extends Controller
 {
-    protected $user;
-
     public function __construct()
     {
         $this->middleware('auth');
@@ -33,7 +32,7 @@ class TaskStatusController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:task_statuses',
+            'name' => ['required', 'string', 'max:255', 'unique:task_statuses'],
         ]);
 
         $taskStatus = TaskStatus::create($validated);
@@ -56,13 +55,15 @@ class TaskStatusController extends Controller
     public function update(Request $request, TaskStatus $taskStatus)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:task_statuses,name,' . $taskStatus->id,
+            'name' => ['required', 'string', 'max:255', Rule::unique('task_statuses')->ignore($taskStatus)],
         ]);
 
         $oldName = $taskStatus->name;
         $taskStatus->update($validated);
 
-        LogsController::log(__('task_status_updated') . ': ' . $oldName . ' -> ' . $taskStatus->name, $taskStatus->id, 'task_status');
+        if ($oldName !== $taskStatus->name) {
+            LogsController::log(__('task_status_updated') . ': ' . $oldName . ' -> ' . $taskStatus->name, $taskStatus->id, 'task_status');
+        }
 
         return redirect()->route('task-statuses.index')->with('success', __('status_updated_success'));
     }
@@ -71,15 +72,12 @@ class TaskStatusController extends Controller
     {
         if ($taskStatus->tasks()->exists()) {
             return redirect()->route('task-statuses.index')
-                ->with('error', __('cannot_delete_task_status_with_tasks'))
-                ->withErrors(['delete' => __('task_status_has_associated_tasks')]);
+                ->with('error', __('cannot_delete_task_status_with_tasks'));
         }
 
-        $taskStatusName = $taskStatus->name;
-        $taskStatusId = $taskStatus->id;
         $taskStatus->delete();
 
-        LogsController::log(__('task_status_deleted') . ': ' . $taskStatusName, $taskStatusId, 'task_status');
+        LogsController::log(__('task_status_deleted') . ': ' . $taskStatus->name, $taskStatus->id, 'task_status');
 
         return redirect()->route('task-statuses.index')->with('success', __('task_status_deleted'));
     }
