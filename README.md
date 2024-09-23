@@ -284,21 +284,6 @@ To use the API, you need to authenticate first:
 - Update a comment: `PUT /api/comments/{id}`
 - Delete a comment: `DELETE /api/comments/{id}`
 
-### Task Statuses
-
-- List all task statuses: `GET /api/task-statuses`
-- Create a task status: `POST /api/task-statuses`
-- Get a specific task status: `GET /api/task-statuses/{id}`
-- Update a task status: `PUT /api/task-statuses/{id}`
-- Delete a task status: `DELETE /api/task-statuses/{id}`
-
-### Task Types
-
-- List all task types: `GET /api/task-types`
-- Create a task type: `POST /api/task-types`
-- Get a specific task type: `GET /api/task-types/{id}`
-- Update a task type: `PUT /api/task-types/{id}`
-- Delete a task type: `DELETE /api/task-types/{id}`
 
 ### Request and Response Formats
 
