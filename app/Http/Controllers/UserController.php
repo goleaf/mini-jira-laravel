@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Password;
 use App\Http\Controllers\LogsController;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class UserController extends Controller
 {
@@ -18,19 +20,19 @@ class UserController extends Controller
         $this->middleware('auth');
     }
 
-    public function index()
+    public function index(): View
     {
         $users = User::with('userGroups')->paginate(15);
         return view('users.index', compact('users'));
     }
 
-    public function create()
+    public function create(): View
     {
         $userGroups = UserGroup::all();
         return view('users.create', compact('userGroups'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $validatedData = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -58,13 +60,13 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', __('user_created_successfully'));
     }
 
-    public function edit(User $user)
+    public function edit(User $user): View
     {
         $userGroups = UserGroup::all();
         return view('users.edit', compact('user', 'userGroups'));
     }
 
-    public function update(Request $request, User $user)
+    public function update(Request $request, User $user): RedirectResponse
     {
         $validatedData = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -76,22 +78,17 @@ class UserController extends Controller
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 
-        if (!empty($validatedData['password'])) {
-            $validatedData['password'] = Hash::make($validatedData['password']);
-        } else {
-            unset($validatedData['password']);
-        }
-
         $user->update([
             'name' => $validatedData['name'],
             'email' => $validatedData['email'],
             'work_position' => $validatedData['work_position'],
             'is_admin' => $validatedData['is_admin'] ?? false,
+            'password' => !empty($validatedData['password']) ? Hash::make($validatedData['password']) : $user->password,
         ]);
 
         $oldGroups = $user->userGroups->pluck('id')->toArray();
-        $user->userGroups()->sync($validatedData['user_groups'] ?? []);
-        $newGroups = $validatedData['user_groups'] ?? [];
+        $user->userGroups()->sync($validatedData['user_groups']);
+        $newGroups = $validatedData['user_groups'];
 
         LogsController::log(__('user_updated') . ': ' . $user->name, $user->id, 'user');
 
@@ -102,15 +99,12 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', __('user_updated_successfully'));
     }
 
-    public function destroy(User $user)
+    public function destroy(User $user): RedirectResponse
     {
-        $tasksAssigned = Task::where(function ($query) use ($user) {
-            $query->where('task_creator_user_id', $user->id)
-                  ->orWhere('assigned_user_id', $user->id)
-                  ->orWhere('assigned_tester_user_id', $user->id);
-        })->exists();
-
-        if ($tasksAssigned) {
+        if (Task::where('task_creator_user_id', $user->id)
+                ->orWhere('assigned_user_id', $user->id)
+                ->orWhere('assigned_tester_user_id', $user->id)
+                ->exists()) {
             return redirect()->route('users.index')->with('error', __('cannot_delete_user_with_tasks'));
         }
 
@@ -120,4 +114,6 @@ class UserController extends Controller
         LogsController::log(__('user_deleted') . ': ' . $userName, $userId, 'user');
         return redirect()->route('users.index')->with('success', __('user_deleted_successfully'));
     }
+
+   
 }
