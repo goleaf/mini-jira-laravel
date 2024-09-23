@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use Illuminate\Validation\Rule;
 
 class TaskController extends Controller
 {
@@ -33,18 +34,16 @@ class TaskController extends Controller
 
     public function index(Request $request)
     {
-        $query = $this->buildTaskQuery($request);
-        $paginationCount = $this->getPaginationCount($request);
-        $tasks = $query->paginate($paginationCount);
+        $tasks = $this->buildTaskQuery($request)->paginate($this->getPaginationCount($request));
         $this->calculateTaskDifference($tasks);
 
         return view('task.index', array_merge(
             $this->getViewData($tasks),
-            ['currentPaginationCount' => $paginationCount]
+            ['currentPaginationCount' => $tasks->perPage()]
         ));
     }
 
-    private function buildTaskQuery(Request $request)
+    private function buildTaskQuery(Request $request): \Illuminate\Database\Eloquent\Builder
     {
         $query = Task::query()
             ->with(['taskCreator', 'assignedUser', 'assignedTester', 'taskType', 'taskStatus'])
@@ -56,7 +55,7 @@ class TaskController extends Controller
         return $query;
     }
 
-    private function applyFilters($query, Request $request)
+    private function applyFilters(\Illuminate\Database\Eloquent\Builder $query, Request $request): void
     {
         $filters = [
             'created_at' => 'whereDate',
@@ -67,20 +66,18 @@ class TaskController extends Controller
             'assigned_tester_user_id' => 'where',
             'task_status_id' => 'where',
             'task_type_id' => 'where',
+            'created_at_from' => ['whereBetween', 'created_at', [$request->created_at_from, $request->created_at_to]],
+            'task_deadline_date_from' => ['whereBetween', 'task_deadline_date', [$request->task_deadline_date_from, $request->task_deadline_date_to]],
         ];
 
         foreach ($filters as $param => $method) {
             if ($request->filled($param)) {
-                $this->applyFilter($query, $method, $param, $request->$param);
+                if (is_array($method)) {
+                    $query->{$method[0]}($method[1], $method[2]);
+                } else {
+                    $this->applyFilter($query, $method, $param, $request->$param);
+                }
             }
-        }
-
-        if ($request->filled('created_at_from') && $request->filled('created_at_to')) {
-            $query->whereBetween('created_at', [$request->created_at_from, $request->created_at_to]);
-        }
-
-        if ($request->filled('task_deadline_date_from') && $request->filled('task_deadline_date_to')) {
-            $query->whereBetween('task_deadline_date', [$request->task_deadline_date_from, $request->task_deadline_date_to]);
         }
     }
 
@@ -105,9 +102,8 @@ class TaskController extends Controller
     {
         $comments = $task->comments()->whereNull('parent_id')->with('user', 'replies')->get();
         $differenceInDays = $this->calculateDaysDifference($task->task_deadline_date);
-        $viewData = compact('task', 'comments', 'differenceInDays');
-
-        return view('task.show', $viewData);
+        
+        return view('task.show', compact('task', 'comments', 'differenceInDays'));
     }
 
     public function edit(Task $task)
@@ -120,13 +116,7 @@ class TaskController extends Controller
 
     public function update(Request $request, Task $task)
     {
-        $validator = $this->validateTask($request);
-
-        if ($validator->fails()) {
-            return $this->redirectBackWithErrors($validator);
-        }
-
-        $validatedData = $validator->validated();
+        $validatedData = $request->validate($this->getValidationRules(), $this->getValidationMessages());
 
         $task->update($validatedData);
         LogsController::log(__('action_updated'), $task->id, 'task');
@@ -135,7 +125,7 @@ class TaskController extends Controller
 
     public function destroy(Task $task)
     {
-        $taskTitle = $task->title; // Store the title before deletion
+        $taskTitle = $task->title;
         $task->delete();
         LogsController::log(__('action_deleted') . ': ' . $taskTitle, $task->id, 'task');
         return $this->redirectToIndex(__('task_deleted_success'));
@@ -151,26 +141,7 @@ class TaskController extends Controller
         return redirect()->back()->with('success', __('session_message'));
     }
 
-    private function validateTask(Request $request)
-    {
-        return Validator::make($request->all(), $this->getValidationRules(), $this->getValidationMessages());
-    }
-
-    private function getFilters()
-    {
-        return [
-            'created_at' => 'whereDate',
-            'task_deadline_date' => 'whereDate',
-            'search' => ['where', 'title', 'like', '%{value}%'],
-            'task_creator_user_id' => 'where',
-            'assigned_user_id' => 'where',
-            'assigned_tester_user_id' => 'where',
-            'task_status_id' => 'where',
-            'task_type_id' => 'where',
-        ];
-    }
-
-    private function applyFilter(&$query, $method, $param, $value)
+    private function applyFilter(\Illuminate\Database\Eloquent\Builder &$query, string|array $method, string $param, mixed $value): void
     {
         if (is_array($method)) {
             $query->{$method[0]}($method[1], $method[2], str_replace('{value}', $value, $method[3]));
@@ -179,12 +150,12 @@ class TaskController extends Controller
         }
     }
 
-    private function getPaginationCount(Request $request)
+    private function getPaginationCount(Request $request): int
     {
         return $request->session()->get('paginationCount', 15);
     }
 
-    private function getViewData($tasks)
+    private function getViewData($tasks): array
     {
         return [
             'tasks' => $tasks,
@@ -196,7 +167,7 @@ class TaskController extends Controller
         ];
     }
 
-    private function getCreateEditViewData($task = null)
+    private function getCreateEditViewData(?Task $task = null): array
     {
         return [
             'task' => $task,
@@ -206,53 +177,39 @@ class TaskController extends Controller
         ];
     }
 
-    private function calculateTaskDifference($tasks)
+    private function calculateTaskDifference($tasks): void
     {
         foreach ($tasks as $task) {
             $task->differenceInDays = $this->calculateDaysDifference($task->task_deadline_date);
         }
     }
 
-    private function calculateDaysDifference($date)
+    private function calculateDaysDifference(string $date): int
     {
         $deadlineDate = Carbon::parse($date);
         $currentDate = Carbon::now();
         return $currentDate->diffInDays($deadlineDate, false);
     }
 
-    private function redirectBackWithErrors($validator)
-    {
-        return redirect()->back()
-            ->withErrors($validator)
-            ->withInput();
-    }
-
-    private function getValidatedDataWithCreator($validator)
-    {
-        $validatedData = $validator->validated();
-        $validatedData['task_creator_user_id'] = Auth::id();
-        return $validatedData;
-    }
-
-    private function redirectToIndex($message)
+    private function redirectToIndex(string $message)
     {
         return redirect()->route('tasks.index')->with('success', $message);
     }
 
-    private function getValidationRules()
+    private function getValidationRules(): array
     {
         return [
-            'title' => 'required|string|max:255',
-            'description' => 'required|string|max:1000',
-            'task_deadline_date' => 'required|date|after:today',
-            'assigned_user_id' => 'required|exists:users,id',
-            'assigned_tester_user_id' => 'required|exists:users,id',
-            'task_type_id' => 'required|exists:task_types,id',
-            'task_status_id' => 'required|exists:task_statuses,id',
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['required', 'string', 'max:1000'],
+            'task_deadline_date' => ['required', 'date', 'after:today'],
+            'assigned_user_id' => ['required', Rule::exists('users', 'id')],
+            'assigned_tester_user_id' => ['required', Rule::exists('users', 'id')],
+            'task_type_id' => ['required', Rule::exists('task_types', 'id')],
+            'task_status_id' => ['required', Rule::exists('task_statuses', 'id')],
         ];
     }
 
-    private function getValidationMessages()
+    private function getValidationMessages(): array
     {
         return [
             'title.required' => __('task_title') . ' ' . __('all_fields_required'),
