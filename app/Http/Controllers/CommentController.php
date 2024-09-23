@@ -6,6 +6,8 @@ use App\Models\Comment;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use App\Http\Controllers\LogsController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class CommentController extends Controller
 {
@@ -16,25 +18,33 @@ class CommentController extends Controller
 
     public function show(Task $task)
     {
-        $comments = $task->comments()->whereNull('parent_id')->with(['user', 'replies.user'])->get();
+        $comments = $task->comments()
+            ->whereNull('parent_id')
+            ->with(['user', 'replies.user'])
+            ->get();
+
         return view('task.show', compact('task', 'comments'));
     }
 
     public function store(Request $request, Task $task)
     {
         $attributes = $request->validate([
-            'body' => 'required|string|max:1000',
-            'parent_id' => 'nullable|exists:comments,id'
+            'body' => ['required', 'string', 'max:1000'],
+            'parent_id' => ['nullable', 'exists:comments,id']
         ]);
 
         $comment = $task->comments()->create([
             'body' => $attributes['body'],
             'parent_id' => $attributes['parent_id'] ?? null,
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
         ]);
 
         if ($comment) {
-            LogsController::log(__('comment_created') . ': ' . substr($comment->body, 0, 30) . '...', $comment->id, 'comment');
+            LogsController::log(
+                __('comment_created') . ': ' . Str::limit($comment->body, 30),
+                $comment->id,
+                'comment'
+            );
             return back()->with('success', __('comment_added_success'));
         }
 
@@ -46,12 +56,16 @@ class CommentController extends Controller
         $this->authorize('update', $comment);
 
         $attributes = $request->validate([
-            'body' => 'required|string|max:1000'
+            'body' => ['required', 'string', 'max:1000']
         ]);
 
         $comment->update($attributes);
 
-        LogsController::log(__('comment_updated') . ': ' . substr($comment->body, 0, 30) . '...', $comment->id, 'comment');
+        LogsController::log(
+            __('comment_updated') . ': ' . Str::limit($comment->body, 30),
+            $comment->id,
+            'comment'
+        );
 
         return back()->with('success', __('comment_updated_success'));
     }
@@ -61,10 +75,14 @@ class CommentController extends Controller
         $this->authorize('delete', $comment);
 
         $commentId = $comment->id;
-        $commentPreview = substr($comment->body, 0, 30) . '...';
+        $commentPreview = Str::limit($comment->body, 30);
 
         if ($comment->delete()) {
-            LogsController::log(__('comment_deleted') . ': ' . $commentPreview, $commentId, 'comment');
+            LogsController::log(
+                __('comment_deleted') . ': ' . $commentPreview,
+                $commentId,
+                'comment'
+            );
             return back()->with('success', __('comment_deleted_success'));
         }
 
