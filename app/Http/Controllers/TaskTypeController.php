@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\TaskType;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Validation\Rule;
 
 class TaskTypeController extends Controller
 {
@@ -12,21 +15,21 @@ class TaskTypeController extends Controller
         $this->middleware('auth');
     }
 
-    public function index()
+    public function index(): View
     {
         $taskTypes = TaskType::orderBy('name')->get();
         return view('task_types.index', compact('taskTypes'));
     }
 
-    public function create()
+    public function create(): View
     {
         return view('task_types.form');
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:task_types',
+            'name' => ['required', 'string', 'max:255', 'unique:task_types'],
         ]);
 
         $taskType = TaskType::create($validated);
@@ -36,15 +39,15 @@ class TaskTypeController extends Controller
         return redirect()->route('task-types.index')->with('success', __('task_type_created'));
     }
 
-    public function edit(TaskType $taskType)
+    public function edit(TaskType $taskType): View
     {
         return view('task_types.form', compact('taskType'));
     }
 
-    public function update(Request $request, TaskType $taskType)
+    public function update(Request $request, TaskType $taskType): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:task_types,name,' . $taskType->id,
+            'name' => ['required', 'string', 'max:255', Rule::unique('task_types')->ignore($taskType)],
         ]);
 
         $taskType->update($validated);
@@ -54,7 +57,7 @@ class TaskTypeController extends Controller
         return redirect()->route('task-types.index')->with('success', __('task_type_updated'));
     }
 
-    public function destroy(TaskType $taskType)
+    public function destroy(TaskType $taskType): RedirectResponse
     {
         if ($taskType->tasks()->exists()) {
             return redirect()->route('task-types.index')
