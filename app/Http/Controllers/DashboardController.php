@@ -18,7 +18,13 @@ class DashboardController extends Controller
         $this->middleware('auth');
     }
 
-    public function userDashboard(User $user, Request $request)
+    public function index(Request $request): \Illuminate\View\View
+    {
+        $user = auth()->user();
+        return $this->userDashboard($user, $request);
+    }
+
+    public function userDashboard(User $user, Request $request): \Illuminate\View\View
     {
         $createdTasks = $this->getCreatedTasksSorted($user, $request);
         $assignedTasks = $this->getAssignedTasksSorted($user, $request);
@@ -43,25 +49,23 @@ class DashboardController extends Controller
         return view('dashboard.index', compact('dashboardData'));
     }
 
-    private function getCreatedTasksSorted(User $user, Request $request)
+    private function getCreatedTasksSorted(User $user, Request $request): Collection
     {
         return $this->getTasksSorted('task_creator_user_id', $user->id, $request);
     }
 
-    private function getAssignedTasksSorted(User $user, Request $request)
+    private function getAssignedTasksSorted(User $user, Request $request): Collection
     {
         return $this->getTasksSorted('assigned_user_id', $user->id, $request);
     }
 
-    private function getLastUpdatedTasksSorted(User $user, Request $request)
+    private function getLastUpdatedTasksSorted(User $user, Request $request): Collection
     {
         return $this->getTasksSorted('id', $user->id, $request)
-            ->map(function ($tasks) {
-                return $tasks->sortByDesc('updated_at');
-            });
+            ->map(fn($tasks) => $tasks->sortByDesc('updated_at'));
     }
 
-    private function getTasksSorted($column, $userId, Request $request)
+    private function getTasksSorted(string $column, int $userId, Request $request): Collection
     {
         $now = Carbon::now()->startOfDay();
 
@@ -70,30 +74,16 @@ class DashboardController extends Controller
             ->with(['taskType', 'taskStatus', 'taskCreator', 'assignedUser', 'assignedTester']);
 
         // Apply filters
-        if ($request->filled('task_status_id')) {
-            $query->where('task_status_id', $request->task_status_id);
-        }
-        if ($request->filled('task_type_id')) {
-            $query->where('task_type_id', $request->task_type_id);
-        }
-        if ($request->filled('search')) {
-            $query->where('title', 'like', '%' . $request->search . '%');
-        }
-        if ($request->filled('task_creator_user_id')) {
-            $query->where('task_creator_user_id', $request->task_creator_user_id);
-        }
-        if ($request->filled('assigned_user_id')) {
-            $query->where('assigned_user_id', $request->assigned_user_id);
-        }
-        if ($request->filled('assigned_tester_user_id')) {
-            $query->where('assigned_tester_user_id', $request->assigned_tester_user_id);
-        }
+        $query->when($request->filled('task_status_id'), fn($q) => $q->where('task_status_id', $request->task_status_id))
+              ->when($request->filled('task_type_id'), fn($q) => $q->where('task_type_id', $request->task_type_id))
+              ->when($request->filled('search'), fn($q) => $q->where('title', 'like', "%{$request->search}%"))
+              ->when($request->filled('task_creator_user_id'), fn($q) => $q->where('task_creator_user_id', $request->task_creator_user_id))
+              ->when($request->filled('assigned_user_id'), fn($q) => $q->where('assigned_user_id', $request->assigned_user_id))
+              ->when($request->filled('assigned_tester_user_id'), fn($q) => $q->where('assigned_tester_user_id', $request->assigned_tester_user_id));
 
         $tasks = $query->get();
 
-        $groupedTasks = $tasks->groupBy(function ($task) {
-            return Carbon::parse($task->task_deadline_date)->format('Y-m');
-        })->sortKeys();
+        $groupedTasks = $tasks->groupBy(fn($task) => Carbon::parse($task->task_deadline_date)->format('Y-m'))->sortKeys();
 
         $formattedTasks = $groupedTasks->map(function ($tasks, $yearMonth) {
             $carbonDate = Carbon::createFromFormat('Y-m', $yearMonth);
@@ -107,10 +97,8 @@ class DashboardController extends Controller
         $currentMonthKey = Carbon::now()->format('Y-m');
         $currentMonthTasks = $formattedTasks->pull($currentMonthKey);
 
-        if ($currentMonthTasks) {
-            return collect([__('this_month') => $currentMonthTasks['tasks']])->merge($formattedTasks->pluck('tasks', 'date'));
-        }
-
-        return $formattedTasks->pluck('tasks', 'date');
+        return $currentMonthTasks
+            ? collect([__('this_month') => $currentMonthTasks['tasks']])->merge($formattedTasks->pluck('tasks', 'date'))
+            : $formattedTasks->pluck('tasks', 'date');
     }
 }
