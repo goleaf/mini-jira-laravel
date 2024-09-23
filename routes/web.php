@@ -42,7 +42,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
 
     // dashboard
-    Route::get('/dashboard/{user}', [DashboardController::class, 'userDashboard'])->name('user.dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('user.dashboard');
 
     // task types
     Route::get('/task-types', [TaskTypeController::class, 'index'])->name('task-types.index');

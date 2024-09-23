@@ -30,16 +30,16 @@ class UserGroupController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255|unique:users_groups',
-            'description' => 'nullable|string|max:1000',
-            'users' => 'array',
-            'users.*' => 'exists:users,id',
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255', 'unique:users_groups'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'users' => ['array'],
+            'users.*' => ['exists:users,id'],
         ]);
 
-        DB::transaction(function () use ($request) {
-            $userGroup = UserGroup::create($request->only(['name', 'description']));
-            $userGroup->users()->attach($request->input('users', []));
+        DB::transaction(function () use ($validated) {
+            $userGroup = UserGroup::create($validated);
+            $userGroup->users()->attach($validated['users'] ?? []);
             
             LogsController::log(__('user_group_created'), $userGroup->id, 'user_group');
         });
@@ -63,21 +63,21 @@ class UserGroupController extends Controller
 
     public function update(Request $request, UserGroup $userGroup)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => [
                 'required',
                 'string',
                 'max:255',
                 Rule::unique('users_groups')->ignore($userGroup->id),
             ],
-            'description' => 'nullable|string|max:1000',
-            'users' => 'array',
-            'users.*' => 'exists:users,id',
+            'description' => ['nullable', 'string', 'max:1000'],
+            'users' => ['array'],
+            'users.*' => ['exists:users,id'],
         ]);
 
-        DB::transaction(function () use ($request, $userGroup) {
-            $userGroup->update($request->only(['name', 'description']));
-            $userGroup->users()->sync($request->input('users', []));
+        DB::transaction(function () use ($validated, $userGroup) {
+            $userGroup->update($validated);
+            $userGroup->users()->sync($validated['users'] ?? []);
             
             LogsController::log(__('user_group_updated'), $userGroup->id, 'user_group');
         });
