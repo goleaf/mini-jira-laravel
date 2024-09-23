@@ -34,11 +34,13 @@ class LogsController extends Controller
 
     public static function log(string $action, int|string $loggable_id, string $loggable_type): void
     {
-        Log::create([
-            'user_id' => auth()->id() ?? 0,
+        $logData = [
+            'user_id' => auth()->id(),
             'action' => $action,
             'loggable_id' => $loggable_id,
             'loggable_type' => $loggable_type,
-        ]);
+        ];
+
+        Log::create($logData);
     }
 }

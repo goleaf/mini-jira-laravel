@@ -26,17 +26,19 @@ class CommentController extends Controller
         return view('task.show', compact('task', 'comments'));
     }
 
-    public function store(Request $request, Task $task)
+    public function store(Request $request)
     {
+
         $attributes = $request->validate([
             'body' => ['required', 'string', 'max:1000'],
             'parent_id' => ['nullable', 'exists:comments,id']
         ]);
 
-        $comment = $task->comments()->create([
+        $comment = Comment::create([
             'body' => $attributes['body'],
             'parent_id' => $attributes['parent_id'] ?? null,
             'user_id' => Auth::id(),
+            'task_id' => $request->task_id,
         ]);
 
         if ($comment) {

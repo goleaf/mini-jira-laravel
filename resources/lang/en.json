@@ -203,5 +203,11 @@
     "user_groups_updated": "User groups updated",
     "select_action": "Select action",
     "select_model_type": "Select model type",
-    "select_user": "Select user"
+    "select_user": "Select user",
+    "task_created_by_user": "Task created by user",
+    "select_status": "Select status",
+    "select_type": "Select type",
+    "select_creator": "Select creator",
+    "select_tester": "Select tester",
+    "select_assigned": "Select assigned"
 }

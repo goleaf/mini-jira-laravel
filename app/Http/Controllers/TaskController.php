@@ -47,8 +47,7 @@ class TaskController extends Controller
     {
         $query = Task::query()
             ->with(['taskCreator', 'assignedUser', 'assignedTester', 'taskType', 'taskStatus'])
-            ->withCount('comments')
-            ->where('task_creator_user_id', Auth::id());
+            ->withCount('comments');
 
         $this->applyFilters($query, $request);
 
