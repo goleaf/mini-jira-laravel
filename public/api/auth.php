@@ -88,14 +88,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .api-table tr:nth-child(even) td {
             background-color: #f1f3f5;
         }
+        .full-width {
+            width: 100vw;
+            position: relative;
+            left: 50%;
+            right: 50%;
+            margin-left: -50vw;
+            margin-right: -50vw;
+        }
     </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h1 class="mb-4">API Authentication Test</h1>
+    <div class="container-fluid p-0">
+        <h1 class="mb-4 text-center">API Authentication Test</h1>
         
-        <div class="row">
-            <div class="col-md-6">
+        <div class="row full-width g-0">
+            <div class="col-12 col-md-4 p-3">
                 <h2>Login</h2>
                 <form id="loginForm">
                     <div class="mb-3">
@@ -107,47 +115,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <button type="submit" class="btn btn-primary">Login</button>
                 </form>
             </div>
-            <div class="col-md-6">
+            <div class="col-12 col-md-4 p-3">
                 <h2>Logout</h2>
                 <button id="logoutBtn" class="btn btn-danger">Logout</button>
             </div>
+            <div class="col-12 col-md-4 p-3">
+                <h2>Result</h2>
+                <div id="result" class="alert" style="display: none;"></div>
+            </div>
         </div>
         
-        <div id="result" class="mt-4 alert" style="display: none;"></div>
-
-        <div class="mt-5">
-            <h2>API Documentation</h2>
-            <table class="table table-bordered api-table">
-                <thead>
-                    <tr>
-                        <th>Endpoint</th>
-                        <th>Method</th>
-                        <th>Description</th>
-                        <th>cURL Example</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>/api/v1/login</td>
-                        <td>POST</td>
-                        <td>Login and get token</td>
-                        <td>
-                            <pre>curl -X POST http://your-domain.com/api/v1/login \
+        <div class="mt-5 full-width">
+            <h2 class="text-center">API Documentation</h2>
+            <div class="table-responsive">
+                <table class="table table-bordered api-table">
+                    <thead>
+                        <tr>
+                            <th>Endpoint</th>
+                            <th>Method</th>
+                            <th>Description</th>
+                            <th>cURL Example</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>/api/v1/login</td>
+                            <td>POST</td>
+                            <td>Login and get token</td>
+                            <td>
+                                <pre>curl -X POST http://your-domain.com/api/v1/login \
 -H "Content-Type: application/json" \
 -d '{"email":"admin@tasksportal.com","password":"password"}'</pre>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>/api/v1/logout</td>
-                        <td>POST</td>
-                        <td>Logout and invalidate token</td>
-                        <td>
-                            <pre>curl -X POST http://your-domain.com/api/v1/logout \
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>/api/v1/logout</td>
+                            <td>POST</td>
+                            <td>Logout and invalidate token</td>
+                            <td>
+                                <pre>curl -X POST http://your-domain.com/api/v1/logout \
 -H "Authorization: Bearer {your_token}"</pre>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 

@@ -87,8 +87,13 @@ class ApiController extends Controller
      */
     public function indexTasks()
     {
+        // Check if user is logged in
+        if (!Auth::check()) {
+            return response()->json(['error' => 'Unauthorized. Please log in.'], 401);
+        }
+
         try {
-            $tasks = Task::with(['status', 'type', 'user', 'comments.replies', 'comments.user', 'comments.replies.user'])
+            $tasks = Task::with(['taskStatus', 'taskType', 'taskCreator', 'assignedUser', 'assignedTester', 'comments.replies', 'comments.user', 'comments.replies.user'])
                 ->latest()
                 ->take(10)
                 ->get();
@@ -98,16 +103,26 @@ class ApiController extends Controller
                 return response()->json(['message' => 'No tasks found'], 200);
             }
 
-            // Transform tasks to include comments and replies
+            // Transform tasks to include all required fields
             $transformedTasks = $tasks->map(function ($task) {
                 return [
                     'id' => $task->id,
                     'title' => $task->title,
                     'description' => $task->description,
-                    'status' => $task->status->name,
-                    'type' => $task->type->name,
-                    'user' => $task->user->name,
-                    'due_date' => $task->due_date,
+                    'task_deadline_date' => $task->task_deadline_date,
+                    'task_creator_user_id' => $task->taskCreator ? $task->taskCreator->name : null,
+                    'assigned_user_id' => $task->assignedUser ? $task->assignedUser->name : null,
+                    'assigned_tester_user_id' => $task->assignedTester ? $task->assignedTester->name : null,
+                    'task_type_id' => $task->taskType ? $task->taskType->name : null,
+                    'task_status_id' => $task->taskStatus ? $task->taskStatus->name : null,
+                    'status' => $task->taskStatus ? $task->taskStatus->name : null,
+                    'type' => $task->taskType ? $task->taskType->name : null,
+                    'task_creator' => $task->taskCreator ? $task->taskCreator->name : null,
+                    'assigned_user' => $task->assignedUser ? $task->assignedUser->name : null,
+                    'assigned_tester' => $task->assignedTester ? $task->assignedTester->name : null,
+                    'created_at' => $task->created_at,
+                    'updated_at' => $task->updated_at,
+                    'deleted_at' => $task->deleted_at,
                     'comments' => $task->comments->map(function ($comment) {
                         return [
                             'id' => $comment->id,
@@ -130,7 +145,13 @@ class ApiController extends Controller
             return response()->json(['tasks' => $transformedTasks]);
         } catch (\Exception $e) {
             \Log::error('Failed to retrieve tasks: ' . $e->getMessage());
-            return response()->json(['error' => 'An error occurred while retrieving tasks. Please try again later.'], 500);
+            return response()->json([
+                'error' => 'An error occurred while retrieving tasks. Please try again later.',
+                'details' => [
+                    'status_code' => 500,
+                    'message' => $e->getMessage()
+                ]
+            ], 500);
         }
     }
 
@@ -148,42 +169,114 @@ class ApiController extends Controller
      */
     public function storeTask(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'status_id' => 'required|exists:task_statuses,id',
-            'type_id' => 'required|exists:task_types,id',
-            'due_date' => 'nullable|date',
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'title' => 'required|string|max:255',
+                'description' => 'required|string',
+                'status_id' => 'required|exists:task_statuses,id',
+                'type_id' => 'required|exists:task_types,id',
+                'due_date' => 'nullable|date',
+            ]);
 
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 422);
+            if ($validator->fails()) {
+                return response()->json(['error' => $validator->errors()], 422);
+            }
+
+            $task = Task::create(array_merge(
+                $validator->validated(),
+                ['user_id' => Auth::id()]
+            ));
+
+            // Eager load the status and type relationships
+            $task->load(['taskStatus', 'taskType']);
+
+            LogsController::log(__('task_created_api') . ': ' . $task->title, $task->id, 'task');
+
+            return response()->json(['message' => 'Task created successfully', 'task' => $task], 201);
+        } catch (\Exception $e) {
+            \Log::error('Failed to create task: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'An error occurred while creating the task. Please try again later.',
+                'details' => [
+                    'status_code' => 500,
+                    'message' => $e->getMessage()
+                ]
+            ], 500);
         }
-
-        $task = Task::create(array_merge(
-            $validator->validated(),
-            ['user_id' => Auth::id()]
-        ));
-
-        LogsController::log(__('task_created_api') . ': ' . $task->title, $task->id, 'task');
-
-        return response()->json(['message' => 'Task created successfully', 'task' => $task], 201);
     }
 
     /**
      * Display the specified task
      *
-     * @param Task $task
+     * @param int $id
      * @return \Illuminate\Http\JsonResponse
      *
      * @example
      * curl -X GET http://your-domain.com/api/v1/tasks/1 \
      *   -H "Authorization: Bearer {your_token}"
      */
-    public function showTask(Task $task)
+    public function showTask($id)
     {
-        $task->load(['status', 'type', 'user', 'comments', 'comments.user']);
-        return response()->json(['task' => $task]);
+        // Check if user is logged in
+        if (!Auth::check()) {
+            return response()->json(['error' => 'Unauthorized. Please log in.'], 401);
+        }
+
+        try {
+            $task = Task::with(['taskStatus', 'taskType', 'taskCreator', 'assignedUser', 'assignedTester', 'comments.replies', 'comments.user', 'comments.replies.user'])
+                        ->findOrFail($id);
+
+            $taskData = [
+                'id' => $task->id,
+                'title' => $task->title,
+                'description' => $task->description,
+                'task_deadline_date' => $task->task_deadline_date,
+                'task_creator_user_id' => $task->taskCreator ? $task->taskCreator->name : null,
+                'assigned_user_id' => $task->assignedUser ? $task->assignedUser->name : null,
+                'assigned_tester_user_id' => $task->assignedTester ? $task->assignedTester->name : null,
+                'task_type_id' => $task->taskType ? $task->taskType->name : null,
+                'task_status_id' => $task->taskStatus ? $task->taskStatus->name : null,
+                'status' => $task->taskStatus ? $task->taskStatus->name : null,
+                'type' => $task->taskType ? $task->taskType->name : null,
+                'task_creator' => $task->taskCreator ? $task->taskCreator->name : null,
+                'assigned_user' => $task->assignedUser ? $task->assignedUser->name : null,
+                'assigned_tester' => $task->assignedTester ? $task->assignedTester->name : null,
+                'created_at' => $task->created_at,
+                'updated_at' => $task->updated_at,
+                'deleted_at' => $task->deleted_at,
+                'comments' => $task->comments->map(function ($comment) {
+                    return [
+                        'id' => $comment->id,
+                        'body' => $comment->body,
+                        'user' => $comment->user ? $comment->user->name : null,
+                        'created_at' => $comment->created_at,
+                        'replies' => $comment->replies->map(function ($reply) {
+                            return [
+                                'id' => $reply->id,
+                                'body' => $reply->body,
+                                'user' => $reply->user ? $reply->user->name : null,
+                                'created_at' => $reply->created_at,
+                            ];
+                        }),
+                    ];
+                }),
+            ];
+
+            LogsController::log(__('task_viewed_api') . ': ' . $task->title, $task->id, 'task');
+
+            return response()->json(['task' => $taskData]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'Task not found'], 404);
+        } catch (\Exception $e) {
+            \Log::error('Failed to retrieve task: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'An error occurred while retrieving the task. Please try again later.',
+                'details' => [
+                    'status_code' => 500,
+                    'message' => $e->getMessage()
+                ]
+            ], 500);
+        }
     }
 
     /**

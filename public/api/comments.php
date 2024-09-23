@@ -104,88 +104,110 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             white-space: pre-wrap;
             word-wrap: break-word;
         }
+        .full-width-column {
+            width: 100%;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
-    <div class="container mt-5">
+    <div class="container-fluid mt-5">
         <h1 class="mb-4">Comments API Test</h1>
         
-        <div class="card mb-4">
-            <div class="card-header">List Comments</div>
-            <div class="card-body">
-                <form id="listCommentsForm">
-                    <div class="input-group mb-3">
-                        <input type="number" class="form-control" id="taskId" name="taskId" placeholder="Task ID" value="1" required>
-                        <input type="hidden" name="action" value="listComments">
-                        <button type="submit" class="btn btn-primary">List Comments</button>
+        <div class="row">
+            <div class="col-12 full-width-column">
+                <div class="card">
+                    <div class="card-header">List Comments</div>
+                    <div class="card-body">
+                        <form id="listCommentsForm">
+                            <div class="input-group mb-3">
+                                <input type="number" class="form-control" id="taskId" name="taskId" placeholder="Task ID" value="1" required>
+                                <input type="hidden" name="action" value="listComments">
+                                <button type="submit" class="btn btn-primary">List Comments</button>
+                            </div>
+                        </form>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
 
-        <div class="card mb-4">
-            <div class="card-header">Create Comment</div>
-            <div class="card-body">
-                <form id="createCommentForm">
-                    <div class="mb-3">
-                        <label for="taskIdForComment" class="form-label">Task ID</label>
-                        <input type="number" class="form-control" id="taskIdForComment" name="taskId" required value="1">
+        <div class="row">
+            <div class="col-12 full-width-column">
+                <div class="card">
+                    <div class="card-header">Create Comment</div>
+                    <div class="card-body">
+                        <form id="createCommentForm">
+                            <div class="mb-3">
+                                <label for="taskIdForComment" class="form-label">Task ID</label>
+                                <input type="number" class="form-control" id="taskIdForComment" name="taskId" required value="1">
+                            </div>
+                            <div class="mb-3">
+                                <label for="body" class="form-label">Comment Body</label>
+                                <textarea class="form-control" id="body" name="body" required>This is a test comment</textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="parentId" class="form-label">Parent Comment ID (optional)</label>
+                                <input type="number" class="form-control" id="parentId" name="parentId">
+                            </div>
+                            <input type="hidden" name="action" value="createComment">
+                            <button type="submit" class="btn btn-primary">Create Comment</button>
+                        </form>
                     </div>
-                    <div class="mb-3">
-                        <label for="body" class="form-label">Comment Body</label>
-                        <textarea class="form-control" id="body" name="body" required>This is a test comment</textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="parentId" class="form-label">Parent Comment ID (optional)</label>
-                        <input type="number" class="form-control" id="parentId" name="parentId">
-                    </div>
-                    <input type="hidden" name="action" value="createComment">
-                    <button type="submit" class="btn btn-primary">Create Comment</button>
-                </form>
+                </div>
             </div>
         </div>
 
-        <div id="result" class="mt-4 alert" style="display: none;"></div>
-
-        <div id="commentsOutput" class="mt-4">
-            <h3>Comments Output</h3>
-            <pre id="commentsJson" style="background-color: #f8f9fa; padding: 15px; border-radius: 5px;"></pre>
+        <div class="row">
+            <div class="col-12 full-width-column">
+                <div id="result" class="mt-4 alert" style="display: none;"></div>
+            </div>
         </div>
 
-        <div class="mt-5">
-            <h2>API Documentation</h2>
-            <table class="table table-bordered api-table">
-                <thead>
-                    <tr>
-                        <th>Endpoint</th>
-                        <th>Method</th>
-                        <th>Description</th>
-                        <th>cURL Example</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>/api/v1/tasks/{task}/comments</td>
-                        <td>GET</td>
-                        <td>List comments for a task</td>
-                        <td>
-                            <pre>curl -X GET http://your-domain.com/api/v1/tasks/1/comments \
+        <div class="row">
+            <div class="col-12 full-width-column">
+                <div id="commentsOutput" class="mt-4">
+                    <h3>Comments Output</h3>
+                    <pre id="commentsJson" style="background-color: #f8f9fa; padding: 15px; border-radius: 5px;"></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12 full-width-column">
+                <h2>API Documentation</h2>
+                <table class="table table-bordered api-table">
+                    <thead>
+                        <tr>
+                            <th>Endpoint</th>
+                            <th>Method</th>
+                            <th>Description</th>
+                            <th>cURL Example</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>/api/v1/tasks/{task}/comments</td>
+                            <td>GET</td>
+                            <td>List comments for a task</td>
+                            <td>
+                                <pre>curl -X GET http://your-domain.com/api/v1/tasks/1/comments \
 -H "Authorization: Bearer {your_token}"</pre>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>/api/v1/tasks/{task}/comments</td>
-                        <td>POST</td>
-                        <td>Create a new comment</td>
-                        <td>
-                            <pre>curl -X POST http://your-domain.com/api/v1/tasks/1/comments \
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>/api/v1/tasks/{task}/comments</td>
+                            <td>POST</td>
+                            <td>Create a new comment</td>
+                            <td>
+                                <pre>curl -X POST http://your-domain.com/api/v1/tasks/1/comments \
 -H "Authorization: Bearer {your_token}" \
 -H "Content-Type: application/json" \
 -d '{"body":"This is a comment","parent_id":null}'</pre>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 

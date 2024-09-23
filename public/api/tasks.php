@@ -15,14 +15,31 @@ function makeApiRequest($endpoint, $method, $data = [], $token = null) {
         'http' => [
             'header'  => implode('', $headers),
             'method'  => $method,
-            'content' => json_encode($data)
+            'content' => json_encode($data),
+            'ignore_errors' => true
         ]
     ];
     $context  = stream_context_create($options);
-    $result = @file_get_contents($url, false, $context);
+    $result = file_get_contents($url, false, $context);
+    
     if ($result === false) {
-        return ['error' => error_get_last()['message']];
+        $error = error_get_last();
+        return ['error' => $error['message']];
     }
+    
+    $responseHeaders = $http_response_header ?? [];
+    $statusLine = $responseHeaders[0] ?? '';
+    preg_match('{HTTP/\S*\s(\d{3})}', $statusLine, $match);
+    $statusCode = $match[1] ?? 500;
+    
+    if ($statusCode >= 300) {
+        return [
+            'error' => "HTTP Error: $statusLine",
+            'response' => $result,
+            'status_code' => $statusCode
+        ];
+    }
+    
     return json_decode($result, true);
 }
 
@@ -39,92 +56,113 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    if ($action === 'createTask') {
-        $taskData = [
-            'title' => $_POST['title'] ?? '',
-            'description' => $_POST['description'] ?? '',
-            'status_id' => $_POST['status_id'] ?? '',
-            'type_id' => $_POST['type_id'] ?? '',
-            'due_date' => $_POST['due_date'] ?? '',
-        ];
-        
-        $apiResponse = makeApiRequest('tasks', 'POST', $taskData, $token);
-        
-        if (isset($apiResponse['error'])) {
-            $response = [
-                'success' => false,
-                'message' => 'Failed to create task: ' . $apiResponse['error']
+    switch ($action) {
+        case 'createTask':
+            $taskData = [
+                'title' => $_POST['title'] ?? '',
+                'description' => $_POST['description'] ?? '',
+                'status_id' => $_POST['status_id'] ?? '',
+                'type_id' => $_POST['type_id'] ?? '',
+                'due_date' => $_POST['due_date'] ?? '',
             ];
-        } else {
-            $response = [
-                'success' => isset($apiResponse['task']),
-                'data' => $apiResponse['task'] ?? null,
-                'message' => isset($apiResponse['task']) ? 'Task created successfully' : 'Failed to create task'
-            ];
-        }
-    } elseif ($action === 'listTasksWithComments') {
-        $apiResponse = makeApiRequest('tasks', 'GET', [], $token);
-        
-        if (isset($apiResponse['error'])) {
-            $response = [
-                'success' => false,
-                'message' => 'Failed to retrieve tasks: ' . $apiResponse['error']
-            ];
-        } elseif (isset($apiResponse['tasks'])) {
-            $tasksWithComments = [];
-            foreach ($apiResponse['tasks'] as $task) {
-                $commentsResponse = makeApiRequest("tasks/{$task['id']}/comments", 'GET', [], $token);
-                if (isset($commentsResponse['error'])) {
-                    $task['comments'] = ['error' => $commentsResponse['error']];
-                } else {
-                    $task['comments'] = $commentsResponse['comments'] ?? [];
-                }
-                $tasksWithComments[] = $task;
-            }
-            $response = [
-                'success' => true,
-                'data' => $tasksWithComments,
-                'message' => 'Tasks and comments retrieved successfully'
-            ];
-        } else {
-            $response = [
-                'success' => false,
-                'data' => [],
-                'message' => 'Failed to retrieve tasks and comments'
-            ];
-        }
-    } elseif ($action === 'getTaskById') {
-        $taskId = $_POST['taskId'] ?? '';
-        if (!$taskId) {
-            $response = [
-                'success' => false,
-                'message' => 'Task ID is required'
-            ];
-        } else {
-            $apiResponse = makeApiRequest("tasks/{$taskId}", 'GET', [], $token);
+            
+            $apiResponse = makeApiRequest('tasks', 'POST', $taskData, $token);
+            
             if (isset($apiResponse['error'])) {
                 $response = [
                     'success' => false,
-                    'message' => 'Failed to retrieve task: ' . $apiResponse['error']
+                    'message' => 'Failed to create task: ' . $apiResponse['error'],
+                    'details' => $apiResponse['response'] ?? ''
                 ];
             } else {
-                $task = $apiResponse['task'] ?? null;
-                if ($task) {
-                    $commentsResponse = makeApiRequest("tasks/{$taskId}/comments", 'GET', [], $token);
-                    $task['comments'] = $commentsResponse['comments'] ?? [];
-                    $response = [
-                        'success' => true,
-                        'data' => $task,
-                        'message' => 'Task and comments retrieved successfully'
-                    ];
-                } else {
+                $response = [
+                    'success' => isset($apiResponse['task']),
+                    'data' => $apiResponse['task'] ?? null,
+                    'message' => isset($apiResponse['task']) ? 'Task created successfully' : 'Failed to create task'
+                ];
+            }
+            break;
+
+        case 'listTasksWithComments':
+            $apiResponse = makeApiRequest('tasks', 'GET', [], $token);
+            
+            if (isset($apiResponse['error'])) {
+                $response = [
+                    'success' => false,
+                    'message' => 'Failed to retrieve tasks: ' . $apiResponse['error'],
+                    'details' => [
+                        'status_code' => $apiResponse['status_code'] ?? 'Unknown',
+                        'response_body' => $apiResponse['response'] ?? 'No response body'
+                    ]
+                ];
+            } elseif (isset($apiResponse['tasks'])) {
+                $tasksWithComments = array_map(function($task) use ($token) {
+                    $commentsResponse = makeApiRequest("tasks/{$task['id']}/comments", 'GET', [], $token);
+                    $task['comments'] = isset($commentsResponse['error']) ? ['error' => $commentsResponse['error']] : ($commentsResponse['comments'] ?? []);
+                    return $task;
+                }, $apiResponse['tasks']);
+
+                $response = [
+                    'success' => true,
+                    'data' => $tasksWithComments,
+                    'message' => 'Tasks and comments retrieved successfully'
+                ];
+            } else {
+                $response = [
+                    'success' => false,
+                    'data' => [],
+                    'message' => 'Failed to retrieve tasks and comments',
+                    'details' => [
+                        'api_response' => $apiResponse
+                    ]
+                ];
+            }
+            break;
+
+        case 'getTaskById':
+            $taskId = $_POST['taskId'] ?? '';
+            if (!$taskId) {
+                $response = [
+                    'success' => false,
+                    'message' => 'Task ID is required'
+                ];
+            } else {
+                $apiResponse = makeApiRequest("tasks/{$taskId}", 'GET', [], $token);
+                if (isset($apiResponse['error'])) {
                     $response = [
                         'success' => false,
-                        'message' => 'Task not found'
+                        'message' => 'Failed to retrieve task: ' . $apiResponse['error'],
+                        'details' => [
+                            'status_code' => $apiResponse['status_code'] ?? 'Unknown',
+                            'response_body' => $apiResponse['response'] ?? 'No response body'
+                        ]
                     ];
+                } else {
+                    $task = $apiResponse['task'] ?? null;
+                    if ($task) {
+                        $commentsResponse = makeApiRequest("tasks/{$taskId}/comments", 'GET', [], $token);
+                        $task['comments'] = $commentsResponse['comments'] ?? [];
+                        $response = [
+                            'success' => true,
+                            'data' => $task,
+                            'message' => 'Task and comments retrieved successfully'
+                        ];
+                    } else {
+                        $response = [
+                            'success' => false,
+                            'message' => 'Task not found'
+                        ];
+                    }
                 }
             }
-        }
+            break;
+
+        default:
+            $response = [
+                'success' => false,
+                'message' => 'Invalid action'
+            ];
+            break;
     }
 
     header('Content-Type: application/json');
@@ -154,63 +192,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .api-table tr:nth-child(even) td {
             background-color: #f1f3f5;
         }
+        .card {
+            height: 100%;
+        }
     </style>
 </head>
 <body>
-    <div class="container mt-5">
+    <div class="container-fluid mt-5">
         <h1 class="mb-4">Tasks and Comments API Test</h1>
         
-        <div class="card mb-4">
-            <div class="card-header">List Tasks with Comments</div>
-            <div class="card-body">
-                <form id="listTasksForm">
-                    <input type="hidden" name="action" value="listTasksWithComments">
-                    <button type="submit" class="btn btn-primary">List Tasks with Comments</button>
-                </form>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">List Tasks with Comments</div>
+                    <div class="card-body d-flex flex-column">
+                        <form id="listTasksForm" class="mb-auto">
+                            <input type="hidden" name="action" value="listTasksWithComments">
+                            <button type="submit" class="btn btn-primary">List Tasks with Comments</button>
+                        </form>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <div class="card mb-4">
-            <div class="card-header">Get Task by ID</div>
-            <div class="card-body">
-                <form id="getTaskByIdForm">
-                    <div class="mb-3">
-                        <label for="taskId" class="form-label">Task ID</label>
-                        <input type="number" class="form-control" id="taskId" name="taskId" required>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">Get Task by ID</div>
+                    <div class="card-body d-flex flex-column">
+                        <form id="getTaskByIdForm" class="mb-auto">
+                            <div class="mb-3">
+                                <label for="taskId" class="form-label">Task ID</label>
+                                <input type="number" class="form-control" id="taskId" name="taskId" required>
+                            </div>
+                            <input type="hidden" name="action" value="getTaskById">
+                            <button type="submit" class="btn btn-primary">Get Task</button>
+                        </form>
                     </div>
-                    <input type="hidden" name="action" value="getTaskById">
-                    <button type="submit" class="btn btn-primary">Get Task</button>
-                </form>
+                </div>
             </div>
-        </div>
 
-        <div class="card mb-4">
-            <div class="card-header">Create Task</div>
-            <div class="card-body">
-                <form id="createTaskForm">
-                    <div class="mb-3">
-                        <label for="title" class="form-label">Title</label>
-                        <input type="text" class="form-control" id="title" name="title" required value="Test Task">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">Create Task</div>
+                    <div class="card-body d-flex flex-column">
+                        <form id="createTaskForm" class="mb-auto">
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Title</label>
+                                <input type="text" class="form-control" id="title" name="title" required value="Test Task">
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea class="form-control" id="description" name="description" required>This is a test task description.</textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="status_id" class="form-label">Status ID</label>
+                                <input type="number" class="form-control" id="status_id" name="status_id" required value="1">
+                            </div>
+                            <div class="mb-3">
+                                <label for="type_id" class="form-label">Type ID</label>
+                                <input type="number" class="form-control" id="type_id" name="type_id" required value="1">
+                            </div>
+                            <div class="mb-3">
+                                <label for="due_date" class="form-label">Due Date</label>
+                                <input type="date" class="form-control" id="due_date" name="due_date" required value="<?php echo date('Y-m-d', strtotime('+1 week')); ?>">
+                            </div>
+                            <input type="hidden" name="action" value="createTask">
+                            <button type="submit" class="btn btn-primary">Create Task</button>
+                        </form>
                     </div>
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Description</label>
-                        <textarea class="form-control" id="description" name="description" required>This is a test task description.</textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="status_id" class="form-label">Status ID</label>
-                        <input type="number" class="form-control" id="status_id" name="status_id" required value="1">
-                    </div>
-                    <div class="mb-3">
-                        <label for="type_id" class="form-label">Type ID</label>
-                        <input type="number" class="form-control" id="type_id" name="type_id" required value="1">
-                    </div>
-                    <div class="mb-3">
-                        <label for="due_date" class="form-label">Due Date</label>
-                        <input type="date" class="form-control" id="due_date" name="due_date" required value="<?php echo date('Y-m-d', strtotime('+1 week')); ?>">
-                    </div>
-                    <input type="hidden" name="action" value="createTask">
-                    <button type="submit" class="btn btn-primary">Create Task</button>
-                </form>
+                </div>
             </div>
         </div>
 
@@ -280,10 +329,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $(document).ready(function() {
             let token = localStorage.getItem('api_token');
 
-            function showResult(message, isSuccess) {
+            function showResult(message, isSuccess, details) {
+                let resultHtml = `<p>${message}</p>`;
+                if (details) {
+                    resultHtml += '<pre>' + JSON.stringify(details, null, 2) + '</pre>';
+                }
                 $('#result').removeClass('alert-success alert-danger')
                     .addClass(isSuccess ? 'alert-success' : 'alert-danger')
-                    .text(message).show();
+                    .html(resultHtml).show();
             }
 
             function handleApiResponse(data) {
@@ -294,7 +347,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $('#tasksOutput').show();
                     }
                 } else {
-                    showResult(data.message, false);
+                    showResult(data.message, false, data.details);
                 }
             }
 
