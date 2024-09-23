@@ -92,13 +92,14 @@ class LoginRegisterController extends Controller
     {
         $userName = Auth::user()->name;
         $userId = Auth::id();
+        
+        LogsController::log(__('user_logged_out') . ': ' . $userName, $userId, 'user');
 
         Auth::logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        LogsController::log(__('user_logged_out') . ': ' . $userName, $userId, 'user');
 
         return redirect()->route('login')->with('success', __('logout_successful'));
     }
